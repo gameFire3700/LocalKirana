@@ -1,0 +1,41 @@
+
+@import url('https://fonts.googleapis.com/css2?family=BBH+Sans+Hegarty&display=swap');
+@import "tailwindcss";
+
+@layer base {
+
+    body {
+
+       
+    }
+
+}
+
+
+@layer components {
+
+    .card{
+
+        @apply *:bg-white text-gray-700
+        w-72 min-h-[10rem]
+        shadow-lg rounded-md overflow-hidden;
+        font-family: "BBH Sans Hegarty", sans-serif;
+    }
+
+    .badge {
+        @apply
+        
+        px-3 py-1 rounded-full text-xs bg-gray-200;
+        font-family: "BBH Sans Hegarty", sans-serif;
+        font-weight: 100;
+    }
+
+    .product-title {
+
+        @apply
+        font-semibold text-2xl
+        overflow-ellipsis overflow-hidden whitespace-nowrap
+    }
+
+}
+
