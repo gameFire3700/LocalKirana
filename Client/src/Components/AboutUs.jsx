@@ -4,7 +4,7 @@ import { Store, Truck, Tag, Smile, Users } from "lucide-react";
 import TeamImage from "../assets/images/team.jpg"; // Optional: add a real image
 import ShopImage from "../assets/images/shop.jpg"; // Optional: add a local kirana image
 
-const AboutUs = () => {
+const AboutUs = () => { 
   return (
     <div className="min-h-screen bg-[#F0FFF0] text-gray-800">
       {/* Hero Section */}

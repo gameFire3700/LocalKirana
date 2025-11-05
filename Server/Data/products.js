@@ -10,7 +10,7 @@ let products = [
   { id: 9, name: "Tata Tea Gold", price: 150, category: "Beverages" },
   { id: 10, name: "Good Day Cookies", price: 30, category: "Snacks" },
   { id: 11, name: "Maggie Noodles", price: 14, category: "Instant Food" },
-  { id: 12, name: "Red Label Tea", price: 140, category: "Beverages" }
+  { id: 12, name: "Red Label Tea", price: 140, category: "Beverages" } 
 ];
 
 module.exports = products;
