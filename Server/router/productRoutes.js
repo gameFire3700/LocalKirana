@@ -1,18 +1,21 @@
+// router/productRoutes.js
 const express = require('express');
 const router = express.Router();
-const {
-  getAllProducts,
-  getProductById,
-  addProduct,
-  updateProduct,
-  deleteProduct
-} = require('../controllers/productController');
+const productController = require('../controllers/productController');
+const { protect, adminOnly, retailerOnly } = require("../middleware/authMiddleware");
 
-// ✅ Routes connected to controllers
-router.get('/', getAllProducts);
-router.get('/:id', getProductById);
-router.post('/', addProduct);
-router.put('/:id', updateProduct);
-router.delete('/:id', deleteProduct);
+// Public routes -no login required
+router.get('/', productController.getAllProducts);          // GET /product
+router.get('/:id', productController.getProductById);      // GET /product/:id
+
+
+// ✅ Retailer Routes (can add / manage own products)
+router.post("/", protect, retailerOnly, productController.createProduct);
+router.put("/:id", protect, retailerOnly, productController.updateOwnProduct);
+router.delete("/:id", protect, retailerOnly, productController.deleteOwnProduct);
+
+// ✅ Admin Routes (manage all)
+router.put("/admin/:id", protect, adminOnly, productController.updateProduct);
+router.delete("/admin/:id", protect, adminOnly, productController.deleteProduct);
 
 module.exports = router;

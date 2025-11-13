@@ -6,8 +6,8 @@ const retailerSchema = new mongoose.Schema({
   retailer_id:{
     
     type: Number,
-    required: true,          // field must be provided
-    unique: true,            // no duplicates allowed
+    required: true,           // field must be provided
+    unique: true,             // no duplicates allowed
     index: true              // make it searchable
   },
   name:{
@@ -41,22 +41,28 @@ const retailerSchema = new mongoose.Schema({
     match: [/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/, "Invalid GST format"]
 
   },
-  shop_address:{
-
-    type: String,
-    required: [true, "Shop Address is required"],
-    trim: true
+  shop_addresses: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Address",
+    },
     
-  },
   registration_data:{
   
     type: Date,
     default: Date.now,       // auto-fill with current date
     required: [true, "Registration date is required"]
 
-  }
+  },
+  is_active: { type: Boolean, default: true },
+  created_by: { type: String },
+  updated_by: { type: String }
+
 },
   { timestamps: true }); //created at updated at automatically
+
+  // Indexes for search
+retailerSchema.index({ name: 1 });
+retailerSchema.index({ shop_address: "text" });
 
   //create model
   const Retailer = mongoose.model('Retailer' , retailerSchema,'retailers');
