@@ -1,6 +1,9 @@
 const express = require('express');
 const mongoose = require('mongoose');
 require('dotenv').config();
+const cookieParser = require("cookie-parser");
+
+
 const connectDB = require('./config/db');
 
 const app = express();
@@ -26,7 +29,9 @@ const categoryRoutes = require('./router/categoryRoutes');
 const contactRoutes = require('./router/contactRoutes');
 const retailerRoutes = require('./router/retailerRoutes');
 const customerRoutes = require('./router/customerRoutes');
-const authRoutes = require('./router/authRoutes');
+const retailerAuthRoutes = require("./router/retailerRoutes");
+const adminAuthRoutes = require("./router/adminRoutes");
+const authRoutes = require('./router/authUserRoutes');
 
 
 const errorHandler = require('./middleware/errorHandler');
@@ -34,6 +39,8 @@ const errorHandler = require('./middleware/errorHandler');
 // ✅ Base Route
 app.get('/', (req, res) => res.json({ name: "Local Kirana" }));
 
+
+app.use(cookieParser());
 // ✅ Mount routes
 app.use('/product', productRoutes);
 app.use('/category', categoryRoutes);
@@ -43,6 +50,9 @@ app.use('/contactus', contactRoutes);
 app.use('/retailer', retailerRoutes);
 app.use('/customer', customerRoutes);
 app.use('/auth', authRoutes);
+app.use("/admin", adminAuthRoutes);
+app.use("/retailer/auth", retailerRoutes);
+
 
 // ✅ 404 handler
 app.use((req, res, next) => {

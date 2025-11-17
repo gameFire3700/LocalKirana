@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+
 const {
   getAllCustomers,
   getCustomerById,
@@ -8,11 +9,15 @@ const {
   deleteCustomer
 } = require('../controllers/customerController');
 
-// ✅ Connect routes to controller functions
-router.get('/', getAllCustomers);
-router.get('/:id', getCustomerById);
+const { adminProtect } = require("../middleware/adminMiddleware");
+
+// 🟢 Public → Register Customer
 router.post('/', addCustomer);
-router.put('/:id', updateCustomer);
-router.delete('/:id', deleteCustomer); 
+
+// 🔵 Admin Only Routes
+router.get('/', adminProtect, getAllCustomers);
+router.get('/:id', adminProtect, getCustomerById);
+router.put('/:id', adminProtect, updateCustomer);
+router.delete('/:id', adminProtect, deleteCustomer);
 
 module.exports = router;

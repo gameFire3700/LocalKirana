@@ -1,7 +1,7 @@
 const jwt = require("jsonwebtoken");
-require("dotenv").config();
+const Retailer = require("../models/Retailer");
 
-exports.protect = (req, res, next) => {
+exports.retailerProtect = async (req, res, next) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -13,8 +13,17 @@ exports.protect = (req, res, next) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // decoded contains: id, email, role or type
-    req.user = decoded;
+    // Must be retailer
+    if (decoded.type !== "retailer") {
+      return res.status(403).json({ message: "Access denied for non-retailers" });
+    }
+
+    req.user = await Retailer.findById(decoded.id);
+
+    if (!req.user) {
+      return res.status(404).json({ message: "Retailer not found" });
+    }
+
     next();
 
   } catch (err) {

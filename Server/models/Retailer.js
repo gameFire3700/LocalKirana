@@ -10,6 +10,7 @@ const retailerSchema = new mongoose.Schema({
     unique: true,             // no duplicates allowed
     index: true              // make it searchable
   },
+
   name:{
 
     type: String,
@@ -30,8 +31,13 @@ const retailerSchema = new mongoose.Schema({
   lowercase: true,
   trim: true,
   match: [/^[\w.-]+@([\w-]+\.)+[\w-]{2,4}$/, "Invalid email format"]
-}
-,
+},
+password: {
+  type: String,
+  required: true,
+  minlength: 6,
+  select: false
+},
   gst_no :{
 
     type: String,
@@ -42,17 +48,20 @@ const retailerSchema = new mongoose.Schema({
 
   },
   shop_addresses: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Address",
+    type: String,
+    required: true
+
+    },
+    role: {
+      type: String,
+      default: "retailer"
     },
     
-  registration_data:{
-  
-    type: Date,
-    default: Date.now,       // auto-fill with current date
-    required: [true, "Registration date is required"]
+ registration_date: {
+  type: Date,
+  default: Date.now
+},
 
-  },
   is_active: { type: Boolean, default: true },
   created_by: { type: String },
   updated_by: { type: String }

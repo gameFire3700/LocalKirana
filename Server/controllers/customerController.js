@@ -1,85 +1,104 @@
-// controllers/customerController.js
-let customers = require('../Data/customers');
+const User = require("../models/User");
 
-// ✅ Get all customers
-exports.getAllCustomers = (req, res) => {
-  res.json(customers);
+/* ===============================================
+   🔵 Admin: Get All Customers
+================================================ */
+exports.getAllCustomers = async (req, res) => {
+  const customers = await User.find({ role: "customer" }).sort({ createdAt: -1 });
+
+  res.json({
+    success: true,
+    count: customers.length,
+    customers,
+  });
 };
 
-// ✅ Get single customer by ID 
-exports.getCustomerById = (req, res, next) => {
-  const id = parseInt(req.params.id);
-  const customer = customers.find(c => c.id === id);
+/* ===============================================
+   🔵 Admin: Get Customer By ID
+================================================ */
+exports.getCustomerById = async (req, res) => {
+  const customer = await User.findOne({
+    _id: req.params.id,
+    role: "customer",
+  });
 
   if (!customer) {
-    const error = new Error("Customer not found");
-    error.statusCode = 404;
-    return next(error);
+    return res.status(404).json({ message: "Customer not found" });
   }
 
-  res.json(customer);
+  res.json({ success: true, customer });
 };
 
-// ✅ Add new customer
-exports.addCustomer = (req, res, next) => {
-  const { name, email, city } = req.body;
+/* ===============================================
+   🟢 Public: Add Customer (Registration)
+================================================ */
+exports.addCustomer = async (req, res) => {
+  const { full_name, email, phone, password, date_of_birth, city } = req.body;
 
-  if (!name || !email || !city) {
-    const error = new Error("Please provide name, email, and city");
-    error.statusCode = 400;
-    return next(error);
+  if (!full_name || !email || !phone || !password || !date_of_birth) {
+    return res.status(400).json({ message: "All fields required" });
   }
 
-  const newCustomer = {
-    id: customers.length + 1,
-    name,
+  const exists = await User.findOne({ email });
+  if (exists) {
+    return res.status(400).json({ message: "Customer already exists" });
+  }
+
+  // Auto increment user_id
+  const lastUser = await User.findOne().sort({ user_id: -1 });
+  const user_id = lastUser ? lastUser.user_id + 1 : 1;
+
+  const newCustomer = await User.create({
+    user_id,
+    full_name,
     email,
-    city
-  };
+    phone,
+    password,
+    date_of_birth,
+    role: "customer",
+  });
 
-  customers.push(newCustomer);
   res.status(201).json({
-    message: "✅ Customer added successfully!",
-    customer: newCustomer
+    message: "Customer registered successfully",
+    customer: newCustomer,
   });
 };
 
-// ✅ Update customer by ID
-exports.updateCustomer = (req, res, next) => {
-  const id = parseInt(req.params.id);
-  const customer = customers.find(c => c.id === id);
+/* ===============================================
+   🔵 Admin: Update Customer
+================================================ */
+exports.updateCustomer = async (req, res) => {
+  const updated = await User.findOneAndUpdate(
+    { _id: req.params.id, role: "customer" },
+    req.body,
+    { new: true, runValidators: true }
+  );
 
-  if (!customer) {
-    const error = new Error("Customer not found");
-    error.statusCode = 404;
-    return next(error);
+  if (!updated) {
+    return res.status(404).json({ message: "Customer not found" });
   }
 
-  const { name, email, city } = req.body;
-  if (name) customer.name = name;
-  if (email) customer.email = email;
-  if (city) customer.city = city;
-
   res.json({
-    message: "✅ Customer updated successfully!",
-    customer
+    message: "Customer updated successfully",
+    customer: updated,
   });
 };
 
-// ✅ Delete customer by ID
-exports.deleteCustomer = (req, res, next) => {
-  const id = parseInt(req.params.id);
-  const index = customers.findIndex(c => c.id === id);
+/* ===============================================
+   🔵 Admin: Delete Customer
+================================================ */
+exports.deleteCustomer = async (req, res) => {
+  const deleted = await User.findOneAndDelete({
+    _id: req.params.id,
+    role: "customer",
+  });
 
-  if (index === -1) {
-    const error = new Error("Customer not found");
-    error.statusCode = 404;
-    return next(error);
+  if (!deleted) {
+    return res.status(404).json({ message: "Customer not found" });
   }
 
-  const deleted = customers.splice(index, 1);
   res.json({
-    message: "🗑️ Customer deleted successfully!",
-    deleted: deleted[0]
+    message: "Customer deleted successfully",
+    deleted,
   });
 };

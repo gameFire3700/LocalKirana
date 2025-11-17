@@ -1,13 +1,17 @@
 const express = require('express');
 const router = express.Router();
-const retailerController = require('../controllers/retailerController');
+const {
+  registerRetailer,
+  loginRetailer,
+  retailerProfile
+} = require('../controllers/retailerAuthController');
 
-// CRUD Routes
-router.post('/', retailerController.addRetailer);
-router.get('/', retailerController.getAllRetailers);
-router.get('/:id', retailerController.getRetailerById);
-router.put('/:id', retailerController.updateRetailer);
-router.delete('/:id', retailerController.deleteRetailer);
+const { retailerProtect } = require('../middleware/retailerProtect');
+
+router.post("/register", registerRetailer);
+router.post("/login", loginRetailer); 
+
+// protected
+router.get("/profile", retailerProtect, retailerProfile); 
 
 module.exports = router;
-

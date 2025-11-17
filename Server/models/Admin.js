@@ -1,17 +1,18 @@
 const mongoose = require("mongoose");
+const bcrypt = require("bcryptjs");
 
-const employeeSchema = new mongoose.Schema(
+const adminSchema = new mongoose.Schema(
   {
-    employee_id: {
+    admin_id: {
       type: Number,
       required: true,
       unique: true,
       index: true,
     },
 
-    name: {
+    full_name: {
       type: String,
-      required: [true, "Employee name is required"],
+      required: [true, "Admin name is required"],
       trim: true,
       minlength: [2, "Name must be at least 2 characters"],
     },
@@ -32,30 +33,30 @@ const employeeSchema = new mongoose.Schema(
       type: String,
       required: [true, "Password is required"],
       minlength: [6, "Password must be at least 6 characters"],
-      select: false, // hide by default
+      select: false,
     },
 
     phone: {
       type: String,
+      required: [true, "Phone is required"],
       match: [/^[0-9]{10}$/, "Invalid phone number"],
       default: "",
     },
 
-    // ✅ Role determines authority level
+    // ROLE BASED
     role: {
       type: String,
-      enum: ["Admin", "Manager", "Approver", "Support"],
-      default: "Approver",
+      enum: ["SuperAdmin", "Admin", "Manager", "Approver", "Support"],
+      default: "Admin",
     },
 
-    // ✅ Employee assigned retailer (if applicable)
     assigned_retailer: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Retailer",
       default: null,
     },
 
-    // ✅ Product approval tracking
+    // PRODUCT APPROVAL HISTORY
     approvals: [
       {
         product: {
@@ -73,11 +74,7 @@ const employeeSchema = new mongoose.Schema(
       },
     ],
 
-    // ✅ Account status
-    is_active: {
-      type: Boolean,
-      default: true,
-    },
+    is_active: { type: Boolean, default: true },
 
     last_login: {
       type: Date,
@@ -86,43 +83,61 @@ const employeeSchema = new mongoose.Schema(
 
     created_by: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Employee", // who added this employee
+      ref: "Admin",
       default: null,
     },
 
     updated_by: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Employee",
+      ref: "Admin",
       default: null,
     },
 
-    is_deleted: {
-      type: Boolean,
-      default: false,
-    },
+    is_deleted: { type: Boolean, default: false },
   },
   {
-    timestamps: true, // createdAt, updatedAt
+    timestamps: true,
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
   }
 );
 
-// ✅ Hook — Update last_login when logged in
-employeeSchema.methods.updateLoginTime = async function () {
+/* ==========================================================
+   🔐 HASH PASSWORD
+========================================================== */
+adminSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) return next();
+  this.password = await bcrypt.hash(this.password, 10);
+  next();
+});
+
+/* ==========================================================
+   🔑 MATCH PASSWORD
+========================================================== */
+adminSchema.methods.matchPassword = async function (enteredPassword) {
+  return await bcrypt.compare(enteredPassword, this.password);
+};
+
+/* ==========================================================
+   🕒 UPDATE LAST LOGIN
+========================================================== */
+adminSchema.methods.updateLoginTime = async function () {
   this.last_login = new Date();
   await this.save();
 };
 
-// ✅ Virtual — total approvals given
-employeeSchema.virtual("total_approvals").get(function () {
+/* ==========================================================
+   📊 VIRTUAL FIELD
+========================================================== */
+adminSchema.virtual("total_approvals").get(function () {
   return this.approvals.filter((a) => a.status === "Approved").length;
 });
 
-// ✅ Indexes for better query performance
-employeeSchema.index({ role: 1 });
-employeeSchema.index({ "approvals.status": 1 });
-employeeSchema.index({ assigned_retailer: 1 });
+/* ==========================================================
+   🔍 INDEXES
+========================================================== */
+adminSchema.index({ role: 1 });
+adminSchema.index({ assigned_retailer: 1 });
+adminSchema.index({ "approvals.status": 1 });
 
-const Employee = mongoose.model("Employee", employeeSchema, "employees");
-module.exports = Employee;
+module.exports = mongoose.model("Admin", adminSchema, "admin");

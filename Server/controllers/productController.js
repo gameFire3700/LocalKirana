@@ -21,6 +21,7 @@ exports.getAllProducts = async (req, res, next) => {
   }
 };
 
+
 /* ==========================================================
    🟢 Public: Get product by ID (either _id or product_id)
 ========================================================== */
