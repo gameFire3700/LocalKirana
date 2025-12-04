@@ -69,7 +69,7 @@ const rationListSchema = new mongoose.Schema(
         default: [],
       },
     ],
-
+    
     created_by: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

@@ -143,7 +143,7 @@ const Features = () => {
             ))}
         </motion.div>
 
-        <p className="text-gray-600 max-w-2xl mx-auto">
+        <p className="text-gray-600 max-w-2xl mx-auto"> 
           Over <span className="text-[#FF6200] font-semibold">1 lakh+</span> happy
           customers trust Local Kirana for their daily essentials.  
           We’re bringing the *heart of local India* online — one order at a time!

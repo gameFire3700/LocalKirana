@@ -1,208 +1,112 @@
-import React, { useState, useEffect } from "react";
-import { Trash2, Edit, PlusCircle } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import AdminSidebar from "./AdminSidebar";
+import AdminHeader from "./AdminHeader";
+import AdminStatsCard from "./AdminStatsCard";
+
+import { Store, Users, CheckCircle2, ShoppingCart } from "lucide-react";
 
 const AdminDashboard = () => {
-  const [products, setProducts] = useState(() => {
-    // Load products from localStorage if available
-    const saved = localStorage.getItem("products");
-    return saved ? JSON.parse(saved) : [];
+  const [stats, setStats] = useState({
+    retailers: 0,
+    approvals: 0,
+    products: 0,
+    orders: 0,
   });
 
-  const [form, setForm] = useState({
-    id: null,
-    name: "",
-    category: "",
-    price: "",
-    stock: "",
-    image: null,
-    imagePreview: null,
-  });
-
-  const [isEditing, setIsEditing] = useState(false);
-
-  // Save products to localStorage whenever products change
   useEffect(() => {
-    localStorage.setItem("products", JSON.stringify(products));
-  }, [products]);
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setForm({ ...form, [name]: value });
-  };
-
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setForm({
-        ...form,
-        image: file,
-        imagePreview: URL.createObjectURL(file),
-      });
-    }
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (isEditing) {
-      setProducts((prev) =>
-        prev.map((p) =>
-          p.id === form.id
-            ? { ...form, imagePreview: form.imagePreview }
-            : p
-        )
-      );
-      setIsEditing(false);
-    } else {
-      const newProduct = {
-        ...form,
-        id: Date.now(),
-      };
-      setProducts([...products, newProduct]);
-    }
-
-    // Reset form
-    setForm({
-      id: null,
-      name: "",
-      category: "",
-      price: "",
-      stock: "",
-      image: null,
-      imagePreview: null,
-    });
-  };
-
-  const handleEdit = (product) => {
-    setForm({ ...product });
-    setIsEditing(true);
-  };
-
-  const handleDelete = (id) => {
-    if (window.confirm("Are you sure you want to delete this product?")) {
-      setProducts(products.filter((p) => p.id !== id));
-    }
-  };
+    // TODO: API calls for dashboard stats
+    // setStats({ retailers: X, approvals: Y, products: Z, orders: K });
+  }, []);
 
   return (
-    <div className="p-8 bg-[#F0FFF0] min-h-screen">
-      <h1 className="text-4xl font-bold text-[#28A745] mb-6 text-center">
-        Admin Dashboard
-      </h1>
+    <div className="flex bg-gray-100 min-h-screen">
+      {/* Sidebar */}
+      <AdminSidebar />
 
-      {/* Add/Edit Product Form */}
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white p-6 rounded-2xl shadow-lg max-w-2xl mx-auto mb-10"
-      >
-        <h2 className="text-2xl font-semibold text-[#28A745] mb-4">
-          {isEditing ? "Edit Product" : "Add Product"}
-        </h2>
+      {/* Right side */}
+      <div className="flex-1 flex flex-col">
+        <AdminHeader />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <input
-            type="text"
-            name="name"
-            placeholder="Product Name"
-            value={form.name}
-            onChange={handleInputChange}
-            className="border p-2 rounded"
-            required
-          />
-          <input
-            type="text"
-            name="category"
-            placeholder="Category"
-            value={form.category}
-            onChange={handleInputChange}
-            className="border p-2 rounded"
-            required
-          />
-          <input
-            type="number"
-            name="price"
-            placeholder="Price"
-            value={form.price}
-            onChange={handleInputChange}
-            className="border p-2 rounded"
-            required
-          />
-          <input
-            type="number"
-            name="stock"
-            placeholder="Stock Quantity"
-            value={form.stock}
-            onChange={handleInputChange}
-            className="border p-2 rounded"
-            required
-          />
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleImageChange}
-            className="border p-2 rounded col-span-2"
-          />
-          {form.imagePreview && (
-            <img
-              src={form.imagePreview}
-              alt="Preview"
-              className="h-40 object-cover rounded col-span-2"
+        {/* Dashboard content */}
+        <div className="p-8 space-y-10">
+
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <AdminStatsCard
+              title="Total Retailers"
+              value={stats.retailers}
+              icon={Users}
+              color="bg-green-500"
             />
-          )}
-        </div>
-
-        <button
-          type="submit"
-          className="mt-4 w-full bg-gradient-to-r from-[#28A745] to-[#FF6200] text-white py-2 rounded-full font-semibold hover:opacity-90 transition"
-        >
-          {isEditing ? "Update Product" : "Add Product"}
-        </button>
-      </form>
-
-      {/* Product List */}
-      <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {products.map((product) => (
-          <div
-            key={product.id}
-            className="bg-white rounded-2xl shadow-md p-4 flex flex-col gap-2 relative"
-          >
-            {product.imagePreview && (
-              <img
-                src={product.imagePreview}
-                alt={product.name}
-                className="w-full h-40 object-cover rounded-xl"
-              />
-            )}
-            <h3 className="font-semibold text-lg text-gray-800">
-              {product.name}
-            </h3>
-            <p className="text-gray-500 text-sm">{product.category}</p>
-            <p className="text-[#28A745] font-bold">₹{product.price}</p>
-            <p
-              className={`text-xs font-semibold px-2 py-1 rounded-full ${
-                product.stock > 0
-                  ? "bg-green-100 text-green-700"
-                  : "bg-red-100 text-red-700"
-              }`}
-            >
-              {product.stock > 0 ? "In Stock" : "Out of Stock"}
-            </p>
-
-            <div className="flex justify-between mt-2">
-              <button
-                onClick={() => handleEdit(product)}
-                className="flex items-center gap-1 bg-[#FFF4E0] text-[#FF6200] px-3 py-1 rounded-full hover:opacity-90 transition"
-              >
-                <Edit size={16} /> Edit
-              </button>
-              <button
-                onClick={() => handleDelete(product.id)}
-                className="flex items-center gap-1 bg-[#FF6200] text-white px-3 py-1 rounded-full hover:opacity-90 transition"
-              >
-                <Trash2 size={16} /> Delete
-              </button>
-            </div>
+            <AdminStatsCard
+              title="Pending Approvals"
+              value={stats.approvals}
+              icon={CheckCircle2}
+              color="bg-orange-500"
+            />
+            <AdminStatsCard
+              title="Total Products"
+              value={stats.products}
+              icon={Store}
+              color="bg-blue-500"
+            />
+            <AdminStatsCard
+              title="Total Orders"
+              value={stats.orders}
+              icon={ShoppingCart}
+              color="bg-purple-500"
+            />
           </div>
-        ))}
+
+          {/* Recent Table */}
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="bg-white p-6 rounded-xl shadow-lg border border-green-200"
+          >
+            <h3 className="text-2xl font-bold text-green-700 mb-4">
+              Recent Retailers
+            </h3>
+
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="text-left border-b">
+                  <th className="py-3">Name</th>
+                  <th className="py-3">Email</th>
+                  <th className="py-3">Phone</th>
+                  <th className="py-3">Status</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                <tr className="border-b">
+                  <td className="py-3">Arjun Store</td>
+                  <td>arjun@gmail.com</td>
+                  <td>9874563210</td>
+                  <td className="text-green-600 font-semibold">Active</td>
+                </tr>
+
+                <tr className="border-b">
+                  <td className="py-3">Kirana Hub</td>
+                  <td>kirana@gmail.com</td>
+                  <td>9568741200</td>
+                  <td className="text-orange-600 font-semibold">
+                    Pending
+                  </td>
+                </tr>
+
+                <tr className="border-b">
+                  <td className="py-3">Fresh Mart</td>
+                  <td>freshmart@gmail.com</td>
+                  <td>9988776655</td>
+                  <td className="text-green-600 font-semibold">Active</td>
+                </tr>
+              </tbody>
+            </table>
+          </motion.div>
+        </div>
       </div>
     </div>
   );

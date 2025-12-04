@@ -77,7 +77,7 @@ res.cookie("userToken", token, {
   httpOnly: true,
   secure: false,
   sameSite: "strict",
-  maxAge: 24 * 60 * 60 * 1000 // 1 day
+  maxAge: 24 * 60 * 60 * 1000 //1 day
 });
 
     res.json({
@@ -91,6 +91,7 @@ res.cookie("userToken", token, {
         role: user.role,
       },
     });
+
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }

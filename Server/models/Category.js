@@ -10,7 +10,6 @@ const categorySchema = new mongoose.Schema(
       unique: true,
       index: true, // Fast searching
     },
-
     name: {
       type: String,
       required: [true, "Category name is required"],
@@ -18,19 +17,17 @@ const categorySchema = new mongoose.Schema(
       minlength: [2, "Category name must be at least 2 characters long"],
       maxlength: [100, "Category name cannot exceed 100 characters"],
     },
-
     slug: {
       type: String,
-      required: true,
+      required: false,
       unique: true,
       lowercase: true,
       trim: true,
     },
-
     description: {
       type: String,
       default: "",
-      maxlength: [500, "Description cannot exceed 500 characters"],
+      maxlength: [200, "Description cannot exceed 500 characters"],
     },
 
     // ✅ Parent category for hierarchy
@@ -49,7 +46,6 @@ const categorySchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
-
     display_order: {
       type: Number,
       default: 0,
@@ -110,7 +106,7 @@ categorySchema.virtual("subcategories", {
   ref: "Category", // reference the same model
   localField: "_id", // parent id
   foreignField: "parent_category", // child’s parent_category
-});
+});  
 
 // ✅ Virtual Field: Show full hierarchy (breadcrumb)
 categorySchema.virtual("fullHierarchy").get(function () {

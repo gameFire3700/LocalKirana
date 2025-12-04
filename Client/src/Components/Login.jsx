@@ -1,159 +1,278 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { ShoppingBag } from "lucide-react";
 import Image1 from "../assets/images/login_background.jpg";
-import { ShoppingBag, Star } from "lucide-react";
+import { customerLogin, customerSignup } from "../api/authApi";
 
 const Login = () => {
   const [isLoginMode, setIsLoginMode] = useState(true);
 
+  const [formData, setFormData] = useState({
+    full_name: "",
+    phone: "",
+    date_of_birth: "",
+    gender: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+
+  const [errors, setErrors] = useState({});
+  const navigate = useNavigate();
+
+  // -------------------- VALIDATION --------------------
+  const validate = () => {
+    let newErrors = {};
+
+    if (!isLoginMode) {
+      if (!formData.full_name.trim())
+        newErrors.full_name = "Full name is required";
+
+      if (!/^\d{10}$/.test(formData.phone))
+        newErrors.phone = "Phone must be 10 digits";
+
+      if (!formData.date_of_birth)
+        newErrors.date_of_birth = "Date of birth is required";
+
+      if (!formData.gender)
+        newErrors.gender = "Please select a gender";
+    }
+
+    if (!formData.email.trim())
+      newErrors.email = "Email is required";
+    else if (!/^[\w.-]+@([\w-]+\.)+[\w-]{2,4}$/.test(formData.email))
+      newErrors.email = "Invalid email";
+
+    if (!formData.password)
+      newErrors.password = "Password is required";
+    else if (formData.password.length < 6)
+      newErrors.password = "Minimum 6 characters";
+
+    if (!isLoginMode) {
+      if (!formData.confirmPassword)
+        newErrors.confirmPassword = "Confirm password required";
+      else if (formData.password !== formData.confirmPassword)
+        newErrors.confirmPassword = "Passwords do not match";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // -------------------- INPUT CHANGE --------------------
+  const handleChange = (e) => {
+    setErrors({ ...errors, [e.target.name]: "" });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  // -------------------- SUBMIT --------------------
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!validate()) return;
+
+    if (!isLoginMode) {
+      try {
+        const res = await customerSignup({
+          full_name: formData.full_name,
+          phone: formData.phone,
+          email: formData.email,
+          date_of_birth: formData.date_of_birth,
+          gender: formData.gender,
+          password: formData.password,
+        });
+
+        if (res.data.success) {
+          localStorage.setItem("userToken", res.data.token);
+          window.dispatchEvent(new Event("authChanged"));
+          navigate("/profile");
+        }
+      } catch (err) {
+        setErrors({ email: err.response?.data?.message || "Signup failed" });
+      }
+      return;
+    }
+
+    try {
+      const res = await customerLogin({
+        email: formData.email,
+        password: formData.password,
+      });
+
+      if (res.data.success) {
+        localStorage.setItem("userToken", res.data.token);
+        window.dispatchEvent(new Event("authChanged"));
+        navigate("/profile");
+      }
+    } catch (err) {
+      setErrors({ email: err.response?.data?.message || "Login failed" });
+    }
+  };
+
   return (
     <div
-      className="flex items-center justify-center min-h-screen bg-center bg-cover relative"
-      style={{
-        backgroundImage: `url(${Image1})`,
-      }}
+      className="flex items-center justify-center min-h-screen bg-cover bg-center relative"
+      style={{ backgroundImage: `url(${Image1})` }}
     >
       {/* Overlay */}
-      <div className="absolute inset-0 bg-[#F5FFF8] bg-opacity-40 backdrop-blur-sm"></div>
+      <div className="absolute inset-0 bg-[#28A745]/25 backdrop-blur-sm"></div>
 
-      {/* Animated Card */}
+      {/* MAIN CARD */}
       <motion.div
+        layout
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8 }}
-        className="relative w-[420px] bg-white bg-opacity-95 p-8 rounded-2xl shadow-xl border border-[#A3D9A5] z-10 overflow-hidden"
+        transition={{ duration: 0.4, type: "spring" }}
+        className={`relative ${
+          isLoginMode ? "w-[420px] py-8" : "w-[530px] py-6"
+        } bg-white/95 px-8 rounded-3xl shadow-2xl border border-[#28A745]/30 z-10 backdrop-blur-xl`}
       >
-        {/* Decorative Glow */}
-        <motion.div
-          animate={{
-            rotate: [0, 360],
-            scale: [1, 1.05, 1],
-            opacity: [0.3, 0.6, 0.3],
-          }}
-          transition={{ repeat: Infinity, duration: 8, ease: "linear" }}
-          className="absolute w-72 h-72 bg-gradient-to-r from-[#28A745]/30 to-[#FF7A00]/30 rounded-full blur-3xl -top-10 -left-10 z-0"
-        ></motion.div>
-
-        {/* Header */}
-        <div className="relative flex flex-col items-center mb-4 z-10">
+        {/* ICON */}
+        <div className="flex flex-col items-center mb-6">
           <motion.div
-            initial={{ scale: 0.8, rotate: -10 }}
-            animate={{ scale: 1, rotate: 0 }}
-            transition={{ duration: 0.6 }}
-            className="bg-gradient-to-r from-[#28A745] to-[#FF7A00] p-4 rounded-full shadow-md mb-3"
+            whileHover={{ scale: 1.07 }}
+            className="bg-[#28A745] p-4 rounded-full shadow-lg cursor-pointer"
           >
-            <ShoppingBag size={34} className="text-white" />
+            <ShoppingBag size={38} className="text-white" />
           </motion.div>
-          <h2 className="text-3xl font-extrabold text-[#2E8B57] mb-1">
+
+          <h2 className="text-3xl font-extrabold text-[#28A745] mt-3">
             {isLoginMode ? "Welcome Back!" : "Create Account"}
           </h2>
-          <p className="text-gray-600 text-sm">
-            {isLoginMode
-              ? "Login to continue shopping at Local Kirana"
-              : "Join Local Kirana — Your Trusted Digital Store"}
-          </p>
         </div>
 
-        {/* Toggle Tabs */}
-        <div className="relative flex h-12 mb-6 border border-[#A3D9A5] rounded-full overflow-hidden z-10">
+        {/* TOGGLE */}
+        <div className="relative flex h-12 mb-6 border border-[#28A745]/50 rounded-full overflow-hidden cursor-pointer">
+
           <button
             onClick={() => setIsLoginMode(true)}
-            className={`w-1/2 text-lg font-medium transition-all z-10 ${
-              isLoginMode ? "text-white" : "text-[#333]"
+            className={`w-1/2 text-lg font-semibold transition-all z-20 ${
+              isLoginMode ? "text-white" : "text-[#28A745]"
             }`}
           >
             Login
           </button>
+
           <button
             onClick={() => setIsLoginMode(false)}
-            className={`w-1/2 text-lg font-medium transition-all z-10 ${
-              !isLoginMode ? "text-white" : "text-[#333]"
+            className={`w-1/2 text-lg font-semibold transition-all z-20 ${
+              !isLoginMode ? "text-white" : "text-[#28A745]"
             }`}
           >
             Sign Up
           </button>
+
           <motion.div
             layout
-            transition={{ type: "spring", stiffness: 300, damping: 25 }}
-            className={`absolute top-0 h-full w-1/2 rounded-full bg-gradient-to-r from-[#28A745] to-[#FF7A00] ${
+            className={`absolute top-0 h-full w-1/2 rounded-full bg-[#28A745] shadow-md z-10 ${
               isLoginMode ? "left-0" : "left-1/2"
             }`}
-          ></motion.div>
+          />
         </div>
 
-        {/* Form */}
-        <motion.form
-          key={isLoginMode ? "login" : "signup"}
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="space-y-5 z-10 relative"
-        >
+        {/* FORM */}
+        <form onSubmit={handleSubmit} className="space-y-5">
           {!isLoginMode && (
-            <input
-              type="text"
-              placeholder="Full Name"
-              required
-              className="w-full p-3 border-b-2 border-[#A3D9A5] bg-transparent outline-none focus:border-[#FF7A00] placeholder-gray-500 transition-all"
-            />
+            <>
+              <InputField
+                name="full_name"
+                placeholder="Full Name"
+                onChange={handleChange}
+                error={errors.full_name}
+              />
+
+              <InputField
+                name="phone"
+                placeholder="Phone Number"
+                onChange={handleChange}
+                error={errors.phone}
+              />
+
+              <InputField
+                type="date"
+                name="date_of_birth"
+                onChange={handleChange}
+                error={errors.date_of_birth}
+              />
+
+              <SelectField
+                name="gender"
+                onChange={handleChange}
+                error={errors.gender}
+              />
+            </>
           )}
 
-          <input
+          <InputField
             type="email"
-            placeholder="Email Address"
-            required
-            className="w-full p-3 border-b-2 border-[#A3D9A5] bg-transparent outline-none focus:border-[#FF7A00] placeholder-gray-500 transition-all"
+            name="email"
+            placeholder="Email"
+            onChange={handleChange}
+            error={errors.email}
           />
-          <input
+
+          <InputField
             type="password"
+            name="password"
             placeholder="Password"
-            required
-            className="w-full p-3 border-b-2 border-[#A3D9A5] bg-transparent outline-none focus:border-[#FF7A00] placeholder-gray-500 transition-all"
+            onChange={handleChange}
+            error={errors.password}
           />
 
           {!isLoginMode && (
-            <input
+            <InputField
               type="password"
+              name="confirmPassword"
               placeholder="Confirm Password"
-              required
-              className="w-full p-3 border-b-2 border-[#A3D9A5] bg-transparent outline-none focus:border-[#FF7A00] placeholder-gray-500 transition-all"
+              onChange={handleChange}
+              error={errors.confirmPassword}
             />
           )}
 
-          {isLoginMode && (
-            <div className="text-right">
-              <p className="text-[#2E8B57] hover:underline cursor-pointer text-sm">
-                Forgot Password?
-              </p>
-            </div>
-          )}
-
+          {/* BUTTON */}
           <motion.button
-            whileHover={{ scale: 1.03 }}
+            whileHover={{ scale: 1.04 }}
             whileTap={{ scale: 0.96 }}
-            type="submit"
-            className="w-full p-3 bg-gradient-to-r from-[#28A745] to-[#FF7A00] text-white rounded-full text-lg font-semibold shadow-md hover:shadow-lg transition-all"
+            className="w-full p-3 bg-[#28A745] hover:bg-[#28A745]/90 active:bg-[#28A745]/70 text-white rounded-full text-lg font-semibold shadow-lg cursor-pointer transition"
           >
             {isLoginMode ? "Login" : "Sign Up"}
           </motion.button>
-
-          <p className="text-center text-[#333] text-sm">
-            {isLoginMode
-              ? "Don’t have an account?"
-              : "Already have an account?"}{" "}
-            <span
-              onClick={() => setIsLoginMode(!isLoginMode)}
-              className="text-[#FF7A00] font-medium hover:underline cursor-pointer"
-            >
-              {isLoginMode ? "Sign Up Now" : "Login"}
-            </span>
-          </p>
-        </motion.form>
-
-        
+        </form>
       </motion.div>
     </div>
   );
 };
+
+/* -------------------- INPUT FIELD -------------------- */
+const InputField = ({ type = "text", name, placeholder, onChange, error }) => (
+  <div>
+    <input
+      type={type}
+      name={name}
+      placeholder={placeholder}
+      onChange={onChange}
+      className="w-full p-3 bg-transparent border-b-2 border-[#28A745]/40 focus:border-[#28A745] outline-none transition text-gray-800"
+    />
+    <p className="text-red-600 text-sm">{error}</p>
+  </div>
+);
+
+/* -------------------- SELECT FIELD -------------------- */
+const SelectField = ({ name, onChange, error }) => (
+  <div>
+    <select
+      name={name}
+      onChange={onChange}
+      className="w-full p-3 bg-transparent border-b-2 border-[#28A745]/40 focus:border-[#28A745] outline-none"
+    >
+      <option value="">Select Gender</option>
+      <option>Male</option>
+      <option>Female</option>
+      <option>Other</option>
+    </select>
+    <p className="text-red-600 text-sm">{error}</p>
+  </div>
+);
 
 export default Login;

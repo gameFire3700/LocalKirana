@@ -6,7 +6,7 @@ const productSchema = new mongoose.Schema({
     unique: true,
     index: true
   },
-
+  
   sku: {
     type: String,
     unique: true,
@@ -42,15 +42,17 @@ const productSchema = new mongoose.Schema({
     min: [0, "Stock cannot be negative"]
   },
 
+  image: { type: String, default: null },
+
+
   unit: { type: String, default: "" },
 
   category: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Category',
-    required: false 
+    required: true 
   },
 
-  category_name: { type: String, default: "" },
   brand: { type: String, default: "" },
 
   supplier_id: {
@@ -65,7 +67,8 @@ const productSchema = new mongoose.Schema({
 
   weight: {
     type: String,
-    enum: ["gm", "kg", "ml", "liter"]
+    enum: ["gm", "kg", "ml", "liter"],
+    required:false
   },
 
   dimensions: {

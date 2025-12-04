@@ -6,12 +6,12 @@ const {
   retailerProfile
 } = require('../controllers/retailerAuthController');
 
-const { retailerProtect } = require('../middleware/retailerProtect');
+const { retailerProtect } = require("../middleware/retailerProtect");
 
 router.post("/register", registerRetailer);
-router.post("/login", loginRetailer); 
+router.post("/login", loginRetailer);
 
 // protected
-router.get("/profile", retailerProtect, retailerProfile); 
+router.get("/profile", retailerProtect, retailerProfile);
 
 module.exports = router;

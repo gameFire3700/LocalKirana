@@ -35,8 +35,10 @@ const userSchema = new mongoose.Schema(
     age: { type: Number, default: 0 },
 
     addresses: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Address",
+      // type: mongoose.Schema.Types.ObjectId,
+      // ref: "Address",
+      // require: false,
+      
     },
 
     profile_pic: { type: String, default: "" },

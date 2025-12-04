@@ -51,28 +51,67 @@ exports.getProductById = async (req, res, next) => {
   }
 };
 
-/* ==========================================================
-   🟡 Retailer: Create Product
-========================================================== */
+
+//Retailer Dashboard par product sirf retailer ka aayega 
+exports.getMyProducts = async (req, res, next) => {
+  try{ 
+    const retailerId = req.user.id;
+
+    const products = await Product.find({
+      supplier_id: retailerId,
+      is_deleted: false
+    }).sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      count: products.length,
+      products
+    });
+
+  } catch (err) {
+    next(err);
+  }
+}; 
+
+
 exports.createProduct = async (req, res, next) => {
   try {
-    const payload = {
+    let payload = {
       ...req.body,
-      supplier_id: req.user?.id || null,   // Retailer ID (if logged in)
-      created_by: req.user?.email || "System"
+      supplier_id: req.user?.id || null,
+      created_by: req.user?.email || "System",
+      image: req.file ? `/uploads/${req.file.filename}` : null,
+      
     };
+
+    // ⭐ FIX HERE
+    if (payload.weight === "") {
+      payload.weight = null;
+    }
+
+    // Auto Set category_name from Category Model
+    if (payload.category) {
+      const Category = require("../models/Category");
+      const cat = await Category.findById(payload.category);
+      if (cat) payload.category_name = cat.name;
+    }
 
     const product = await Product.create(payload);
 
     res.status(201).json({
       success: true,
-      message: "✅ Product added successfully",
-      data: product
+      message: "Product created successfully",
+      data: product,
     });
+
   } catch (err) {
     next(err);
   }
 };
+
+
+/* 
+
 
 /* ==========================================================
    🟠 Retailer: Update only their own product

@@ -102,3 +102,4 @@ exports.deleteCustomer = async (req, res) => {
     deleted,
   });
 };
+
