@@ -4,6 +4,9 @@ const { registerAdmin, loginAdmin } = require("../controllers/adminAuthControlle
 const { adminProtect, authorizeRoles, requireAdminSecret } = require("../middleware/adminMiddleware");
 const { approveProduct, rejectProduct } = require("../controllers/adminProductController");
 const { getAllRetailers } = require("../controllers/adminRetailerController");
+const {getPendingProducts}= require ("../controllers/adminProductController")
+const {getApprovedProducts}= require ("../controllers/adminProductController")
+
 
 const router = express.Router();
 const authLimiter = rateLimit({
@@ -16,14 +19,22 @@ const authLimiter = rateLimit({
 // Register: require secret key (see middleware)
 router.post("/register", requireAdminSecret, registerAdmin);
 
+
 // Login: public but rate-limited in controller (or use express-rate-limit at route level)
 router.post("/login", loginAdmin);
 
 // Protected routes
 router.get("/retailers", adminProtect, getAllRetailers);
 
+
+router.get("/products/pending", adminProtect, getPendingProducts);
+
 // Example: only Admins or SuperAdmin can approve/reject
-router.put("/admin/approve/:id", adminProtect, authorizeRoles("SuperAdmin","Approver","Admin"), approveProduct);
-router.put("/admin/reject/:id", adminProtect, authorizeRoles("SuperAdmin","Approver","Admin"), rejectProduct);
+router.put("/products/approve/:id", adminProtect, authorizeRoles("SuperAdmin","Approver","Admin"), approveProduct);
+
+
+router.put("/products/reject/:id", adminProtect, authorizeRoles("SuperAdmin","Approver","Admin"), rejectProduct);
+
+router.get("/products/approved", adminProtect, getApprovedProducts);
 
 module.exports = router;

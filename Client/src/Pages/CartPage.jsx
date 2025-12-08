@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 
+
 const CartPage = () => {
   const [cart, setCart] = useState([]);
 
@@ -49,6 +50,7 @@ const CartPage = () => {
               key={product.id}
               className="bg-white p-4 rounded-xl shadow-md flex flex-col items-center text-center gap-3 border border-gray-100 hover:shadow-lg transition"
             >
+
               {/* Product Image */}
               {product.imagePreview ? (
                 <img
@@ -64,7 +66,12 @@ const CartPage = () => {
 
               {/* Product Details */}
               <h3 className="text-lg font-semibold">{product.name}</h3>
-              <p className="text-gray-500">{product.category}</p>
+
+              {/* FIXED CATEGORY RENDER */}
+              <p className="text-gray-500">
+                {product.category?.name || product.category || "Unknown Category"}
+              </p>
+
               <span className="text-[#28A745] font-bold">₹{product.price}</span>
 
               {/* Quantity Controls */}
@@ -75,7 +82,9 @@ const CartPage = () => {
                 >
                   -
                 </button>
+
                 <span className="font-semibold">{product.quantity}</span>
+
                 <button
                   onClick={() => increaseQuantity(index)}
                   className="bg-gray-200 px-3 py-1 rounded-full hover:bg-gray-300 transition cursor-pointer"
@@ -91,12 +100,12 @@ const CartPage = () => {
               >
                 Remove
               </button>
+
             </div>
           ))}
         </div>
       )}
 
-      {/* Total Section */}
       {cart.length > 0 && (
         <div className="mt-8 text-right text-2xl font-bold text-[#28A745]">
           Total: ₹{total}

@@ -81,6 +81,8 @@ exports.createProduct = async (req, res, next) => {
       supplier_id: req.user?.id || null,
       created_by: req.user?.email || "System",
       image: req.file ? `/uploads/${req.file.filename}` : null,
+      product_status: "pending",
+      is_available: false   
       
     };
 
@@ -223,4 +225,13 @@ exports.deleteProduct = async (req, res, next) => {
   } catch (err) {
     next(err);
   }
+};
+
+exports.getPendingProducts = async (req, res) => {
+  const products = await Product.find({
+    product_status: "pending",
+    is_deleted: false 
+  }).sort({ createdAt: -1 });
+
+  res.json({ success: true, count: products.length, products });
 };

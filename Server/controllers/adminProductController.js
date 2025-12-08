@@ -1,33 +1,75 @@
 const Product = require("../models/Product");
 
-exports.approveProduct = async (req, res) => {
-  const product = await Product.findById(req.params.id);
-
-  if (!product) return res.status(404).json({ message: "Product not found" });
-
-  product.is_available = true;
-  await product.save();
-
-  res.json({
-    success: true,
-    message: "Product approved by admin",
-    product
-  });
+// GET all pending products
+const getPendingProducts = async (req, res) => {
+  try {
+    const products = await Product.find({ product_status: "pending" });
+    res.json({ success: true, products });
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Server error" });
+  }
 };
 
-exports.rejectProduct = async (req, res) => {
-  const product = await Product.findById(req.params.id);
+// APPROVE product
+const approveProduct = async (req, res) => {
+  try {
+    await Product.findByIdAndUpdate(req.params.id, { 
+      product_status: "approved" ,
+      is_available: true
+    },
+      {new:true}
+    );
+    res.json({ success: true, message: "Product approved" });
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+// REJECT product
+const rejectProduct = async (req, res) => {
+   try {
+    const product = await Product.findByIdAndUpdate(
+      req.params.id,
+      { product_status: "rejected" },
+      { new: true }
+    );
 
-  if (!product) return res.status(404).json({ message: "Product not found" });
+    if (!product) {
+      return res.json({
+        success: false,
+        message: "Product not found"
+      });
+    }
 
-  product.is_available = false;
-  product.is_deleted = true;
+    res.json({
+      success: true,
+      message: "Product rejected",
+      product
+    });
 
-  await product.save();
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+};
 
-  res.json({
-    success: true,
-    message: "Product rejected by admin",
-    product
-  });
+const getApprovedProducts = async (req, res) => {
+  try {
+    const products = await Product.find({ is_available: true, is_deleted: false });
+    res.json({
+      success: true,
+      count: products.length,
+      products
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+module.exports = {
+  getPendingProducts,
+  approveProduct,
+  rejectProduct,
+  getApprovedProducts,
 };

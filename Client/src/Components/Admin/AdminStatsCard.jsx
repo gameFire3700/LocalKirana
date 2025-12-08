@@ -1,20 +1,18 @@
-import { motion } from "framer-motion";
+import React from "react";
 
-const AdminStatsCard = ({ title, value, icon: Icon, color }) => {
+const AdminStatsCard = ({ title, value, icon: Icon, color = "bg-green-500" }) => {
   return (
-    <motion.div
-      whileHover={{ scale: 1.04 }}
-      className="bg-white shadow-lg rounded-xl p-6 border border-green-200 flex items-center gap-5"
-    >
-      <div className={`p-4 rounded-full ${color} text-white`}>
-        <Icon size={28} />
+    <div className="bg-white rounded-xl shadow p-5 border border-green-100 flex items-center gap-4">
+      <div className={`${color} p-3 rounded-full text-white`}>
+        {Icon && <Icon size={20} />}
       </div>
 
       <div>
-        <h3 className="text-lg text-gray-500">{title}</h3>
-        <p className="text-3xl font-bold text-green-700">{value}</p>
+        <div className="text-sm text-gray-500">{title}</div>
+        <div className="text-2xl font-bold text-green-700">{value}</div>
       </div>
-    </motion.div>
+    </div>
   );
 };
+
 export default AdminStatsCard;

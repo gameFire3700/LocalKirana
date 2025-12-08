@@ -13,4 +13,11 @@ axiosClient.interceptors.request.use((config) => {
   return config; 
 });
 
+axiosClient.interceptors.request.use((config) => {
+  const token = localStorage.getItem("adminToken");
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
+
+
 export default axiosClient;

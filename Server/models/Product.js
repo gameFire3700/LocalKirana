@@ -42,12 +42,14 @@ const productSchema = new mongoose.Schema({
     min: [0, "Stock cannot be negative"]
   },
 
+
   image: { type: String, default: null },
 
 
-  unit: { type: String, default: "" },
+  unit: { type: String, default: ""},
 
-  category: {
+  category: 
+  {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Category',
     required: true 
@@ -71,11 +73,19 @@ const productSchema = new mongoose.Schema({
     required:false
   },
 
+  
   dimensions: {
     length: { type: Number, default: 0 },
     width: { type: Number, default: 0 },
     height: { type: Number, default: 0 }
   },
+
+  product_status: {
+  type: String,
+  enum: ["pending", "approved", "rejected"],
+  default: "pending"
+},
+
 
   warehouse_location: { type: String, default: "" },
 

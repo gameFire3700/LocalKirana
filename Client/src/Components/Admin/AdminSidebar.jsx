@@ -1,50 +1,87 @@
-import { LayoutDashboard, Users, CheckCircle2, LogOut } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import {
+  LayoutDashboard,
+  Users,
+  CheckCircle,
+  LogOut,
+  Menu,
+  X,
+  PackageSearch,
+  CheckCircle2   // ⭐ Added
+} from "lucide-react";
 
 const AdminSidebar = () => {
-  const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
+  const location = useLocation();
 
-  const handleLogout = () => {
-    localStorage.removeItem("adminToken");
-    navigate("/admin/login");
-  };
+  const isActive = (path) =>
+    location.pathname === path
+      ? "bg-green-600 text-white"
+      : "text-gray-800 hover:bg-gray-100";
 
   return (
-    <div className="w-64 bg-white shadow-xl h-screen p-6 border-r border-gray-200">
-      <h1 className="text-3xl font-extrabold text-green-700 mb-8">
-        Admin Panel
-      </h1>
+    <>
+      <button
+        onClick={() => setOpen(!open)}
+        className="lg:hidden fixed top-4 left-4 z-50 bg-green-600 text-white p-2 rounded-lg shadow"
+      >
+        {open ? <X size={20} /> : <Menu size={20} />}
+      </button>
 
-      <nav className="space-y-5">
-        <Link
-          to="/admin/dashboard"
-          className="flex items-center gap-3 text-lg hover:text-green-600"
-        >
-          <LayoutDashboard /> Dashboard
-        </Link>
+      <aside
+        className={`fixed top-0 left-0 h-full w-64 bg-white border-r shadow-md transform transition-transform z-40 ${
+          open ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+        }`}
+      >
+        <div className="p-5 border-b">
+          <h1 className="text-2xl font-bold text-green-700">Admin Panel</h1>
+          <p className="text-sm text-gray-500 mt-1">Manage the store</p>
+        </div>
 
-        <Link
-          to="/admin/approvals"
-          className="flex items-center gap-3 text-lg hover:text-green-600"
-        >
-          <CheckCircle2 /> Product Approvals
-        </Link>
+        <nav className="p-4 flex flex-col gap-2">
 
-        <Link
-          to="/admin/retailers"
-          className="flex items-center gap-3 text-lg hover:text-green-600"
-        >
-          <Users /> Manage Retailers
-        </Link>
+          <Link
+            to="/admin/dashboard"
+            className={`flex items-center gap-3 p-3 rounded-lg ${isActive("/admin/dashboard")}`}
+          >
+            <LayoutDashboard size={18} /> Dashboard
+          </Link>
 
-        <button
-          onClick={handleLogout}
-          className="flex items-center gap-3 text-lg text-red-600 hover:text-red-700 mt-10"
-        >
-          <LogOut /> Logout
-        </button>
-      </nav>
-    </div>
+          <Link
+            to="/admin/retailers"
+            className={`flex items-center gap-3 p-3 rounded-lg ${isActive("/admin/retailers")}`}
+          >
+            <Users size={18} /> Retailers
+          </Link>
+
+          {/* ⭐⭐ UPDATED PRODUCT APPROVAL LINK ⭐⭐ */}
+          <Link
+            to="/admin/product-approval"
+            className={`flex items-center gap-3 p-3 rounded-lg ${isActive("/admin/product-approval")}`}
+          >
+            <CheckCircle2 size={18} /> Product Approval
+          </Link>
+
+          <Link
+            to="/admin/approved-products"
+            className={`flex items-center gap-3 p-3 rounded-lg ${isActive("/admin/approved-products")}`}
+          >
+            <CheckCircle size={18} /> Approved Products
+          </Link>
+
+          <div className="mt-4 border-t pt-4">
+            <Link
+              to="/admin/logout"
+              className="flex items-center gap-3 p-3 rounded-lg text-red-600 hover:bg-red-50"
+            >
+              <LogOut size={18} /> Logout
+            </Link>
+          </div>
+
+        </nav>
+      </aside>
+    </>
   );
 };
 

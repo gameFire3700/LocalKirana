@@ -1,79 +1,84 @@
 import React, { useEffect, useState } from "react";
-import { getAllRetailers } from "../../api/adminApi";
-import { motion } from "framer-motion";
-import { Users, CheckCircle, XCircle } from "lucide-react";
+import AdminSidebar from "./AdminSidebar";
+import AdminHeader from "./AdminHeader";
+import { getAllRetailers, getRetailerById } from "../../api/adminApi";
+import Loader from "./Loader";
+import RetailerDetailModal from "./RetailerDetailModal";
 
 const AdminManageRetailers = () => {
-  const [retailers, setRetailers] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  const fetchRetailers = async () => {
-    try {
-      const res = await getAllRetailers();
-      setRetailers(res.data.retailers);
-    } catch (err) {
-      console.log("ERROR FETCHING RETAILERS:", err);
-    }
-    setLoading(false);
-  };
+  const [retailers, setRetailers] = useState([]);
+  const [selectedRetailer, setSelectedRetailer] = useState(null);
 
   useEffect(() => {
-    fetchRetailers();
+    loadRetailers();
   }, []);
 
+  const loadRetailers = async () => {
+    setLoading(true);
+    try {
+      const res = await getAllRetailers();
+      setRetailers(res.data.retailers ?? []);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const openRetailer = async (id) => {
+    try {
+      const res = await getRetailerById(id);
+      setSelectedRetailer(res.data.retailer ?? res.data.data ?? res.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   return (
-    <div className="p-8">
-      <h2 className="text-3xl font-bold text-green-700 mb-6 flex items-center gap-3">
-        <Users size={35} />
-        Manage Retailers
-      </h2>
+    <div className="flex min-h-screen bg-gray-50">
+      <AdminSidebar />
+      <div className="flex-1 ml-0 lg:ml-64 flex flex-col">
+        <AdminHeader subtitle="Manage registered retailers" />
+        <main className="p-8">
+          <h1 className="text-2xl font-bold text-green-700 mb-4">Retailers</h1>
 
-      {loading ? (
-        <p className="text-gray-600">Loading...</p>
-      ) : retailers.length === 0 ? (
-        <p className="text-gray-600">No retailers found</p>
-      ) : (
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-white p-6 rounded-xl shadow-lg border border-green-200"
-        >
-          <table className="w-full border-collapse">
-            <thead>
-              <tr className="border-b bg-gray-100">
-                <th className="py-3">Retailer Name</th>
-                <th className="py-3">Email</th>
-                <th className="py-3">Phone</th>
-                <th className="py-3">GST</th>
-                <th className="py-3">Status</th>
-              </tr>
-            </thead>
+          {loading ? (
+            <Loader />
+          ) : retailers.length === 0 ? (
+            <div className="bg-white p-6 rounded-xl shadow text-center text-gray-600">No retailers found.</div>
+          ) : (
+            <div className="bg-white p-4 rounded-xl shadow border">
+              <div className="grid grid-cols-12 gap-3 text-sm font-semibold border-b pb-2">
+                <div className="col-span-4">Retailer</div>
+                <div className="col-span-3">Email</div>
+                <div className="col-span-2">Phone</div>
+                <div className="col-span-3">Actions</div>
+              </div>
 
-            <tbody>
-              {retailers.map((ret) => (
-                <tr key={ret._id} className="border-b hover:bg-gray-50">
-                  <td className="py-3">{ret.name}</td>
-                  <td>{ret.email}</td>
-                  <td>{ret.contact}</td>
-                  <td>{ret.gst_no}</td>
+              <div className="divide-y">
+                {retailers.map((r) => (
+                  <div key={r._id} className="grid grid-cols-12 gap-3 items-center py-3">
+                    <div className="col-span-4">
+                      <div className="font-semibold">{r.name}</div>
+                      <div className="text-xs text-gray-500">{r.shop_name || ""}</div>
+                    </div>
 
-                  <td>
-                    {ret.is_active ? (
-                      <span className="text-green-600 font-semibold flex items-center gap-2">
-                        <CheckCircle size={18} /> Active
-                      </span>
-                    ) : (
-                      <span className="text-red-600 font-semibold flex items-center gap-2">
-                        <XCircle size={18} /> Inactive
-                      </span>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </motion.div>
-      )}
+                    <div className="col-span-3 text-sm text-gray-600">{r.email}</div>
+                    <div className="col-span-2 text-sm text-gray-600">{r.contact}</div>
+
+                    <div className="col-span-3 flex gap-2">
+                      <button onClick={() => openRetailer(r._id)} className="px-3 py-1 rounded bg-gray-100 hover:bg-gray-200">View</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {selectedRetailer && <RetailerDetailModal retailer={selectedRetailer} onClose={() => setSelectedRetailer(null)} />}
+        </main>
+      </div>
     </div>
   );
 };

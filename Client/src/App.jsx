@@ -31,6 +31,7 @@ import AdminLogin from "./Pages/AdminLogin";
 
 
 import SearchResults from "./Pages/SearchResults"; 
+import ProductApproval from "./Components/Admin/ProductApproval";
 
 const Layout = () => (
   <div className="flex flex-col min-h-screen"> 
@@ -80,14 +81,23 @@ const router = createBrowserRouter([
   },  
    // ---------------- Admin Panel Layout (SEPARATE UI) ----------------
   
+{
+    path: "/admin/login",
+    element: <AdminLogin />,
+  },
+  {
+    path: "/admin/register",
+    element: <AdminRegister />,
+  },
+
   {
     path: "/admin",
     element: <AdminLayout />,  // NO NAVBAR, NO FOOTER
     children: [
-      { path: "login", element: <AdminLogin /> },
-      { path: "register", element: <AdminRegister /> },
       { path: "dashboard", element: <AdminDashboard /> },
       { path: "retailer", element: <AdminManageRetailers /> },
+      { path: "product-approval", element: <ProductApproval /> },
+      
     ],
   },
 
