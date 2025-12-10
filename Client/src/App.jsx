@@ -13,11 +13,6 @@ import AdminDashboard from "./Components/Admin/AdminDashboard";
 
 import CartPage from "./Pages/CartPage";
 
-import AdminManageRetailers from "./Components/Admin/AdminManageRetailers";
-import RetailerLayout from "./Layout/RetailerLayout";
-import AdminLayout from "./Layout/AdminLayout";
-
-
 import RetailerLogin from "./Pages/RetailerLogin";
 import RetailerRegister from "./Pages/RetailerRegister";
 import RetailerDashboard from "./Components/Retailer/RetailerDashboard";
@@ -25,14 +20,17 @@ import RetailerProducts from "./Components/Retailer/RetailerProducts";
 import RetailerAddProduct from "./Components/Retailer/RetailerAddProduct";
 import RetailerEditProduct from "./Components/Retailer/RetailerEditProduct";
 import RetailerInventory from "./Components/Retailer/RetailerInventory";
+import RetailerLayout from "./Layout/RetailerLayout";
 
 import AdminRegister from "./Pages/AdminRegister";
 import AdminLogin from "./Pages/AdminLogin";
 
+import AdminRetailers from "./Components/Admin/AdminRetailers";
+import AdminLayout from "./Layout/AdminLayout";
+import ProductApproval from "./Components/Admin/ProductApproval";
+import ApprovedProducts from "./Components/Admin/ApprovedProducts";
 
 import SearchResults from "./Pages/SearchResults"; 
-import ProductApproval from "./Components/Admin/ProductApproval";
-
 const Layout = () => (
   <div className="flex flex-col min-h-screen"> 
     <Navbar />
@@ -95,8 +93,9 @@ const router = createBrowserRouter([
     element: <AdminLayout />,  // NO NAVBAR, NO FOOTER
     children: [
       { path: "dashboard", element: <AdminDashboard /> },
-      { path: "retailer", element: <AdminManageRetailers /> },
+      { path: "retailers", element: <AdminRetailers/> },
       { path: "product-approval", element: <ProductApproval /> },
+      { path: "approved-products", element: <ApprovedProducts /> },
       
     ],
   },

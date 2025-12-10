@@ -6,16 +6,20 @@ const axiosClient = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
-// auto attach token 
-axiosClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem("retailerToken");
-  if (token) config.headers.Authorization = `Bearer ${token}`;
-  return config; 
-});
 
 axiosClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem("adminToken");
-  if (token) config.headers.Authorization = `Bearer ${token}`;
+  const adminToken = localStorage.getItem("adminToken");
+  const retailerToken = localStorage.getItem("retailerToken");
+
+  // Admin routes start with /admin
+  if (config.url.startsWith("/admin") && adminToken) {
+    config.headers.Authorization = `Bearer ${adminToken}`;
+  }
+  // Retailer routes start with /product/retailer or /retailer
+  else if (config.url.startsWith("/product/retailer") && retailerToken) {
+    config.headers.Authorization = `Bearer ${retailerToken}`;
+  }
+
   return config;
 });
 

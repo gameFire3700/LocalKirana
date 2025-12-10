@@ -1,7 +1,7 @@
 // src/api/retailerProductApi.js
 import axiosClient from "./axiosClient";
 
-// NOTE: endpoints chosen to match your router/productRoutes.js
+// --- PRODUCTS ---
 export const addRetailerProduct = (formData) =>
   axiosClient.post("/product/retailer/create", formData, {
     headers: { "Content-Type": "multipart/form-data" },

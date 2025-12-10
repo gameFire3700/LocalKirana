@@ -19,7 +19,9 @@ export const getAllRetailers = () => axiosClient.get("/admin/retailers");
 
 export const getRetailerById = (id) => axiosClient.get(`/admin/retailer/${id}`);
 
-// ---------------- PRODUCTS (Admin) ----------------
+
+
+// GET pending products
 export const getPendingProducts = () => {
   const token = localStorage.getItem("adminToken");
   return axiosClient.get("/admin/products/pending", {
@@ -27,13 +29,42 @@ export const getPendingProducts = () => {
   });
 };
 
+// GET approved products
+export const getApprovedProducts = () => {
+  const token = localStorage.getItem("adminToken");
+  return axiosClient.get("/admin/products/approved", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+};
 
-export const getApprovedProducts = () => axiosClient.get("/admin/products/approved");
+// GET single product by ID
+export const getProductById = (id) => {
+  const token = localStorage.getItem("adminToken");
+  return axiosClient.get(`/admin/products/${id}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+};
 
-export const getProductById = (id) => axiosClient.get(`/admin/products/${id}`);
+// APPROVE product
+export const approveProduct = (id) => {
+  const token = localStorage.getItem("adminToken");
+  return axiosClient.put(
+    `/admin/products/approve/${id}`,
+    {}, // empty body
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  );
+};
 
-export const approveProduct = (id) =>
-  axiosClient.put(`/admin/products/approve/${id}`);
-
-export const rejectProduct = (id) =>
-  axiosClient.put(`/admin/products/reject/${id}`);
+// REJECT product
+export const rejectProduct = (id) => {
+  const token = localStorage.getItem("adminToken");
+  return axiosClient.put(
+    `/admin/products/reject/${id}`,
+    {}, // empty body
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  );
+};

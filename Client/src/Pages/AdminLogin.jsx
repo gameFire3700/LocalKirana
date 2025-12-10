@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Shield } from "lucide-react";
 import Image1 from "../assets/images/login_background.jpg";
 import { loginAdmin } from "../api/adminApi";
+import { useNavigate } from "react-router-dom";
 
 const AdminLogin = () => {
   const [form, setForm] = useState({
@@ -12,6 +13,8 @@ const AdminLogin = () => {
 
   const [error, setError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
+
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setError("");
@@ -26,9 +29,11 @@ const AdminLogin = () => {
       localStorage.setItem("adminToken", res.data.token);
 
       setSuccessMsg("Login Successful!");
+
       setTimeout(() => {
-        window.location.href = "/admin/dashboard";
+        navigate("/admin/dashboard");  // ✅ Redirect using React Router
       }, 1000);
+
     } catch (err) {
       setError(err.response?.data?.message || "Login failed!");
     }

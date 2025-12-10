@@ -9,7 +9,9 @@ const upload = require("../middleware/upload");
 // ================== RETAILER ROUTES ==================
 
 router.get('/retailer/my-products', retailerProtect, productController.getMyProducts);
+
 router.post('/retailer/create', retailerProtect, upload.single("image"), productController.createProduct);
+
 router.put('/retailer/update/:id', retailerProtect, productController.updateOwnProduct);
 router.delete('/retailer/delete/:id', retailerProtect, productController.deleteOwnProduct);
 

@@ -175,6 +175,7 @@ exports.deleteOwnProduct = async (req, res, next) => {
 /* ==========================================================
    🔵 Admin: Update any product
 ========================================================== */
+
 exports.updateProduct = async (req, res, next) => {
   try {
     const idParam = req.params.id;

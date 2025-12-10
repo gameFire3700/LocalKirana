@@ -1,54 +1,38 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Eye, CheckCircle, XCircle, X, Package, Tag, Store, IndianRupee } from "lucide-react";
-import { getPendingProducts, approveProduct, rejectProduct } from "../../api/adminApi";
+import { Eye, Package, Tag, Store, IndianRupee } from "lucide-react";
+import axios from "axios";
 
-const ProductApproval = () => {
+const ApprovedProducts = () => {
   const [products, setProducts] = useState([]);
   const [selected, setSelected] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchProducts = async () => {
+  const fetchApprovedProducts = async () => {
     try {
-      const res = await getPendingProducts();
+      const res = await axios.get("http://localhost:5000/admin/products/approved", {
+        headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` },
+      });
       setProducts(res.data.products || []);
     } catch (error) {
-      console.log("Error fetching products", error);
+      console.log("Error fetching approved products", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleApprove = async (id) => {
-    try {
-      await approveProduct(id);
-      setProducts(products.filter((p) => p._id !== id));
-    } catch (error) {
-      console.log("Approval failed", error);
-    }
-  };
-
-  const handleReject = async (id) => {
-    try {
-      await rejectProduct(id);
-      setProducts(products.filter((p) => p._id !== id));
-    } catch (error) {
-      console.log("Rejection failed", error);
-    }
-  };
-
   useEffect(() => {
-    fetchProducts();
+    fetchApprovedProducts();
   }, []);
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
-      <h1 className="text-3xl font-bold text-green-700 mb-6">Product Approval</h1>
+      <h1 className="text-3xl font-bold text-green-700 mb-6">Approved Products</h1>
 
       {loading ? (
-        <p className="text-gray-600 text-lg">Loading products...</p>
+        <p className="text-gray-600 text-lg">Loading approved products...</p>
       ) : products.length === 0 ? (
-        <p className="text-gray-600 text-lg">No pending products.</p>
+        <p className="text-gray-600 text-lg">No approved products found.</p>
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {products.map((product) => (
@@ -65,8 +49,8 @@ const ProductApproval = () => {
                   alt={product.name}
                   className="w-full h-full object-cover"
                 />
-                <span className="absolute top-2 right-2 bg-yellow-400 text-white px-2 py-1 rounded-lg text-xs font-semibold shadow">
-                  Pending
+                <span className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded-lg text-xs font-semibold shadow">
+                  Approved
                 </span>
               </div>
 
@@ -87,20 +71,6 @@ const ProductApproval = () => {
                 >
                   <Eye size={18} /> View
                 </button>
-
-                <button
-                  onClick={() => handleApprove(product._id)}
-                  className="flex-1 bg-green-600 text-white rounded-xl py-2 flex items-center justify-center gap-2 hover:bg-green-700 transition-colors duration-300"
-                >
-                  <CheckCircle size={18} /> Approve
-                </button>
-
-                <button
-                  onClick={() => handleReject(product._id)}
-                  className="flex-1 bg-red-600 text-white rounded-xl py-2 flex items-center justify-center gap-2 hover:bg-red-700 transition-colors duration-300"
-                >
-                  <XCircle size={18} /> Reject
-                </button>
               </div>
             </motion.div>
           ))}
@@ -110,12 +80,7 @@ const ProductApproval = () => {
       {/* Modal */}
       <AnimatePresence>
         {selected && (
-          <Modal
-            selected={selected}
-            onClose={() => setSelected(null)}
-            onApprove={handleApprove}
-            onReject={handleReject}
-          />
+          <Modal selected={selected} onClose={() => setSelected(null)} />
         )}
       </AnimatePresence>
     </div>
@@ -123,7 +88,7 @@ const ProductApproval = () => {
 };
 
 // ⭐ Modal Component (Full product details)
-const Modal = ({ selected, onClose, onApprove, onReject }) => (
+const Modal = ({ selected, onClose }) => (
   <motion.div
     initial={{ opacity: 0 }}
     animate={{ opacity: 1 }}
@@ -164,6 +129,8 @@ const Modal = ({ selected, onClose, onApprove, onReject }) => (
         <Info label="Supplier / Retailer ID" value={selected.supplier_id} />
         <Info label="Description" value={selected.description} />
         <Info label="Price" value={`₹ ${selected.price}`} />
+        <Info label="Cost Price" value={`₹ ${selected.cost_price}`} />
+        <Info label="MRP" value={`₹ ${selected.mrp}`} />
         <Info label="Stock" value={selected.stock} />
         <Info label="Discount" value={`${selected.discount}%`} />
         <Info label="Tax Rate" value={`${selected.tax_rate}%`} />
@@ -175,6 +142,8 @@ const Modal = ({ selected, onClose, onApprove, onReject }) => (
         <Info label="Updated By" value={selected.updated_by} />
         <Info label="Created At" value={new Date(selected.createdAt).toLocaleString()} />
         <Info label="Updated At" value={new Date(selected.updatedAt).toLocaleString()} />
+        <Info label="Manufacture Date" value={new Date(selected.manufacture_date).toLocaleDateString()} />
+        <Info label="Expiry Date" value={new Date(selected.expiry_date).toLocaleDateString()} />
 
         <div>
           <p className="font-semibold text-gray-700 mb-1">Tags:</p>
@@ -197,28 +166,6 @@ const Modal = ({ selected, onClose, onApprove, onReject }) => (
           </p>
         </div>
       </div>
-
-      <div className="flex gap-4 mt-6">
-        <button
-          onClick={() => {
-            onApprove(selected._id);
-            onClose();
-          }}
-          className="flex-1 bg-green-600 text-white rounded-xl py-2 hover:bg-green-700 flex items-center justify-center gap-2 transition-colors duration-300"
-        >
-          <CheckCircle size={18} /> Approve
-        </button>
-
-        <button
-          onClick={() => {
-            onReject(selected._id);
-            onClose();
-          }}
-          className="flex-1 bg-red-600 text-white rounded-xl py-2 hover:bg-red-700 flex items-center justify-center gap-2 transition-colors duration-300"
-        >
-          <XCircle size={18} /> Reject
-        </button>
-      </div>
     </motion.div>
   </motion.div>
 );
@@ -226,12 +173,9 @@ const Modal = ({ selected, onClose, onApprove, onReject }) => (
 // Info Row
 const Info = ({ label, value }) => (
   <div className="flex gap-3">
-    <p className="w-40 font-semibold text-gray-700">{label}:</p>
+    <p className="w-44 font-semibold text-gray-700">{label}:</p>
     <p className="text-gray-600">{value}</p>
   </div>
 );
 
-
-export default ProductApproval;
-
-
+export default ApprovedProducts;
