@@ -30,6 +30,7 @@ router.get("/retailers", adminProtect, getAllRetailers);
 
 router.get("/products/pending", adminProtect, getPendingProducts);
 
+
 // Example: only Admins or SuperAdmin can approve/reject
 router.put("/products/approve/:id", adminProtect, authorizeRoles("SuperAdmin","Approver","Admin"), approveProduct);
 

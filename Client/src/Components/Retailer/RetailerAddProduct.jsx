@@ -2,12 +2,9 @@ import React, { useState, useEffect } from "react";
 import RetailerSidebar from "./RetailerSidebar";
 import { createProduct } from "../../api/retailerApi";
 import axiosClient from "../../api/axiosClient";
-import { useNavigate } from "react-router-dom";
 
 const RetailerAddProduct = () => {
-  const navigate = useNavigate();
   const [categories, setCategories] = useState([]);
-
   const [data, setData] = useState({
     name: "",
     description: "",
@@ -26,10 +23,10 @@ const RetailerAddProduct = () => {
     manufacture_date: "",
     weight: "",
   });
-
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState(null);
   const [errors, setErrors] = useState({});
+  const [successMessage, setSuccessMessage] = useState(""); // ✅ new state
 
   /* ==========================================================
         LOAD CATEGORIES
@@ -106,7 +103,29 @@ const RetailerAddProduct = () => {
     try {
       const res = await createProduct(fd);
       if (res.data.success) {
-        navigate("/retailer/products");
+        // ✅ show success message instead of navigating
+        setSuccessMessage("Your product has been added! It will be approved by the admin shortly.");
+        setData({
+          name: "",
+          description: "",
+          price: "",
+          cost_price: "",
+          mrp: "",
+          discount: "",
+          stock: "",
+          sku: "",
+          unit: "",
+          category: "",
+          category_name: "",
+          brand: "",
+          tax_rate: "",
+          expiry_date: "",
+          manufacture_date: "",
+          weight: "",
+        });
+        setImage(null);
+        setPreview(null);
+        setErrors({});
       }
     } catch (err) {
       const d = err.response?.data;
@@ -133,6 +152,13 @@ const RetailerAddProduct = () => {
         {errors.general && (
           <p className="text-red-600 mb-4 font-semibold bg-red-100 p-3 rounded">
             {errors.general}
+          </p>
+        )}
+
+        {/* Success message */}
+        {successMessage && (
+          <p className="text-green-700 mb-4 font-semibold bg-green-100 p-3 rounded">
+            {successMessage}
           </p>
         )}
 
@@ -164,6 +190,7 @@ const RetailerAddProduct = () => {
               <input
                 name={key}
                 type={key.includes("date") ? "date" : "text"}
+                value={data[key]}
                 onChange={onChange}
                 className="p-3 border rounded-lg w-full mt-1 bg-[#F1F3F5] focus:ring-2 focus:ring-[#28A745] outline-none transition"
               />
@@ -180,6 +207,7 @@ const RetailerAddProduct = () => {
             </label>
             <select
               name="category"
+              value={data.category}
               onChange={(e) => {
                 const id = e.target.value;
                 const cat = categories.find((c) => c._id === id);

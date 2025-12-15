@@ -1,6 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Eye, CheckCircle, XCircle, X, Package, Tag, Store, IndianRupee } from "lucide-react";
+import {
+  Eye,
+  CheckCircle,
+  XCircle,
+  X,
+  Package,
+  Tag,
+  Store,
+  IndianRupee
+} from "lucide-react";
 import { getPendingProducts, approveProduct, rejectProduct } from "../../api/adminApi";
 
 const ProductApproval = () => {
@@ -77,7 +86,7 @@ const ProductApproval = () => {
               </p>
 
               <p className="text-gray-500 text-sm flex items-center gap-2 mt-1">
-                <Store size={16} /> Retailer ID: {product.supplier_id}
+                <Store size={16} /> Retailer: {product.supplier_id ? product.supplier_id.name : "N/A"}
               </p>
 
               <div className="flex gap-3 mt-4">
@@ -122,7 +131,7 @@ const ProductApproval = () => {
   );
 };
 
-// ⭐ Modal Component (Full product details)
+// Modal Component
 const Modal = ({ selected, onClose, onApprove, onReject }) => (
   <motion.div
     initial={{ opacity: 0 }}
@@ -161,7 +170,14 @@ const Modal = ({ selected, onClose, onApprove, onReject }) => (
         <Info label="Name" value={selected.name} />
         <Info label="Brand" value={selected.brand} />
         <Info label="Category ID" value={selected.category} />
-        <Info label="Supplier / Retailer ID" value={selected.supplier_id} />
+        <Info
+          label="Supplier / Retailer"
+          value={
+            selected.supplier_id
+              ? `${selected.supplier_id.name} (${selected.supplier_id.email})`
+              : "N/A"
+          }
+        />
         <Info label="Description" value={selected.description} />
         <Info label="Price" value={`₹ ${selected.price}`} />
         <Info label="Stock" value={selected.stock} />
@@ -171,8 +187,24 @@ const Modal = ({ selected, onClose, onApprove, onReject }) => (
         <Info label="Product Status" value={selected.product_status} />
         <Info label="Available" value={selected.is_available ? "Yes" : "No"} />
         <Info label="Featured" value={selected.is_featured ? "Yes" : "No"} />
-        <Info label="Created By" value={selected.created_by} />
-        <Info label="Updated By" value={selected.updated_by} />
+
+        <Info
+          label="Created By"
+          value={
+            selected.created_by
+              ? `${selected.created_by.name} (${selected.created_by.email})`
+              : "N/A"
+          }
+        />
+        <Info
+          label="Updated By"
+          value={
+            selected.updated_by
+              ? `${selected.updated_by.name} (${selected.updated_by.email})`
+              : "N/A"
+          }
+        />
+
         <Info label="Created At" value={new Date(selected.createdAt).toLocaleString()} />
         <Info label="Updated At" value={new Date(selected.updatedAt).toLocaleString()} />
 
@@ -193,7 +225,9 @@ const Modal = ({ selected, onClose, onApprove, onReject }) => (
         <div>
           <p className="font-semibold text-gray-700 mb-1">Dimensions:</p>
           <p className="text-gray-600">
-            {selected.dimensions.length} x {selected.dimensions.width} x {selected.dimensions.height}
+            {selected.dimensions
+              ? `${selected.dimensions.length} x ${selected.dimensions.width} x ${selected.dimensions.height}`
+              : "N/A"}
           </p>
         </div>
       </div>
@@ -223,7 +257,7 @@ const Modal = ({ selected, onClose, onApprove, onReject }) => (
   </motion.div>
 );
 
-// Info Row
+// Info Row Component
 const Info = ({ label, value }) => (
   <div className="flex gap-3">
     <p className="w-40 font-semibold text-gray-700">{label}:</p>
@@ -231,7 +265,4 @@ const Info = ({ label, value }) => (
   </div>
 );
 
-
 export default ProductApproval;
-
-

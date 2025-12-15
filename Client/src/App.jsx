@@ -14,7 +14,7 @@ import ProductDetail from "./Components/ProductDetail";
 import AdminDashboard from "./Components/Admin/AdminDashboard";
 
 import CartPage from "./Pages/CartPage";
-
+import CheckoutPage from "./Pages/CheckoutPage";
 import RetailerLogin from "./Pages/RetailerLogin";
 import RetailerRegister from "./Pages/RetailerRegister";
 import RetailerDashboard from "./Components/Retailer/RetailerDashboard";
@@ -59,7 +59,7 @@ const router = createBrowserRouter([
       { path: "profile", element: <Profile /> },
       { path: "cart", element: <CartPage /> },
       { path: "search", element: <SearchResults /> },
-
+      { path: "checkout", element: <CheckoutPage /> },
       // Retailer auth pages (they can stay here because they need navbar)
       { path: "retailer/login", element: <RetailerLogin /> },
       { path: "retailer/register", element: <RetailerRegister /> },

@@ -1,14 +1,17 @@
 import React, { useEffect, useState } from "react";
-
+import { useNavigate } from "react-router-dom";
 
 const CartPage = () => {
   const [cart, setCart] = useState([]);
+  const navigate = useNavigate();
 
+  // Load cart from localStorage
   useEffect(() => {
     const savedCart = JSON.parse(localStorage.getItem("cart")) || [];
     setCart(savedCart);
   }, []);
 
+  // Remove product from cart
   const removeFromCart = (index) => {
     const newCart = [...cart];
     newCart.splice(index, 1);
@@ -17,6 +20,7 @@ const CartPage = () => {
     window.dispatchEvent(new Event("storage"));
   };
 
+  // Increase quantity
   const increaseQuantity = (index) => {
     const newCart = [...cart];
     newCart[index].quantity += 1;
@@ -24,6 +28,7 @@ const CartPage = () => {
     localStorage.setItem("cart", JSON.stringify(newCart));
   };
 
+  // Decrease quantity
   const decreaseQuantity = (index) => {
     const newCart = [...cart];
     if (newCart[index].quantity > 1) {
@@ -35,79 +40,87 @@ const CartPage = () => {
     }
   };
 
+  // Buy Now handler
+  const handleBuyNow = (product) => {
+    navigate("/checkout", { state: { product } });
+  };
+
+  // Calculate total
   const total = cart.reduce((sum, p) => sum + p.price * p.quantity, 0);
 
   return (
-    <div className="min-h-screen p-6 bg-[#F8FFF9]">
-      <h2 className="text-3xl font-bold mb-6 text-[#28A745]">Your Cart</h2>
+    <div className="min-h-screen p-6 bg-gray-50">
+      <h2 className="text-3xl font-bold mb-6 text-green-700">Your Cart</h2>
 
       {cart.length === 0 ? (
-        <p className="text-gray-500">Your cart is empty.</p>
+        <p className="text-gray-500 text-lg">Your cart is empty.</p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {cart.map((product, index) => (
             <div
               key={product.id}
-              className="bg-white p-4 rounded-xl shadow-md flex flex-col items-center text-center gap-3 border border-gray-100 hover:shadow-lg transition"
+              className="bg-white p-4 rounded-2xl shadow-md flex flex-col items-center text-center gap-3 border border-gray-100 hover:shadow-xl transition"
             >
-
               {/* Product Image */}
               {product.imagePreview ? (
                 <img
                   src={product.imagePreview}
                   alt={product.name}
-                  className="w-32 h-32 object-contain bg-[#f8f8f8] rounded-lg"
+                  className="w-32 h-32 object-contain bg-gray-100 rounded-lg"
                 />
               ) : (
-                <div className="w-32 h-32 flex items-center justify-center bg-gray-100 text-gray-400 rounded-lg">
+                <div className="w-32 h-32 flex items-center justify-center bg-gray-200 text-gray-400 rounded-lg">
                   No Image
                 </div>
               )}
 
-              {/* Product Details */}
+              {/* Product Info */}
               <h3 className="text-lg font-semibold">{product.name}</h3>
-
-              {/* FIXED CATEGORY RENDER */}
               <p className="text-gray-500">
                 {product.category?.name || product.category || "Unknown Category"}
               </p>
-
-              <span className="text-[#28A745] font-bold">₹{product.price}</span>
+              <span className="text-green-700 font-bold">₹{product.price}</span>
 
               {/* Quantity Controls */}
               <div className="flex items-center justify-center gap-3 mt-2">
                 <button
                   onClick={() => decreaseQuantity(index)}
-                  className="bg-gray-200 px-3 py-1 rounded-full hover:bg-gray-300 transition cursor-pointer"
+                  className="bg-gray-200 px-3 py-1 rounded-full hover:bg-gray-300 transition"
                 >
                   -
                 </button>
-
                 <span className="font-semibold">{product.quantity}</span>
-
                 <button
                   onClick={() => increaseQuantity(index)}
-                  className="bg-gray-200 px-3 py-1 rounded-full hover:bg-gray-300 transition cursor-pointer"
+                  className="bg-gray-200 px-3 py-1 rounded-full hover:bg-gray-300 transition"
                 >
                   +
                 </button>
               </div>
 
-              {/* Remove Button */}
-              <button
-                onClick={() => removeFromCart(index)}
-                className="bg-red-500 text-white py-1.5 px-4 rounded-full text-sm font-medium hover:opacity-90 transition cursor-pointer mt-2"
-              >
-                Remove
-              </button>
-
+              {/* Remove & Buy Now */}
+              <div className="flex gap-2 mt-2">
+                <button
+                  onClick={() => removeFromCart(index)}
+                  className="bg-red-500 text-white py-1.5 px-4 rounded-full text-sm font-medium hover:opacity-90 transition"
+                >
+                  Remove
+                </button>
+                <button
+                  onClick={() => handleBuyNow(product)}
+                  className="bg-blue-500 text-white py-1.5 px-4 rounded-full text-sm font-medium hover:bg-blue-600 transition"
+                >
+                  Buy Now
+                </button>
+              </div>
             </div>
           ))}
         </div>
       )}
 
+      {/* Total */}
       {cart.length > 0 && (
-        <div className="mt-8 text-right text-2xl font-bold text-[#28A745]">
+        <div className="mt-8 text-right text-2xl font-bold text-green-700">
           Total: ₹{total}
         </div>
       )}

@@ -1,6 +1,8 @@
 // controllers/productController.js
 const Product = require('../models/Product');
 
+const PendingProduct = require("../models/PendingProduct");
+
 /* ==========================================================
    🟢 Public: Get all products (visible to everyone)
 ========================================================== */
@@ -73,44 +75,37 @@ exports.getMyProducts = async (req, res, next) => {
   }
 }; 
 
-exports.createProduct = async (req, res, next) => {
+exports.createProduct = async (req, res) => {
   try {
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
     let payload = {
       ...req.body,
-      supplier_id: req.user?.id || null,
-      created_by: req.user?.email || "System",
-      image: req.file ? `/uploads/${req.file.filename}` : null,
-      product_status: "pending",
-      is_available: false   
-      
+      supplier_id: req.user._id,
+      created_by: req.user.email,
+      image: req.file ? `/uploads/${req.file.filename}` : null
     };
 
-    // ⭐ FIX HERE
-    if (payload.weight === "") {
-      payload.weight = null;
-    }
+    // weight enum safety
+    if (!payload.weight) delete payload.weight;
 
-    // Auto Set category_name from Category Model
-    if (payload.category) {
-      const Category = require("../models/Category");
-      const cat = await Category.findById(payload.category);
-      if (cat) payload.category_name = cat.name;
-    }
-
-    const product = await Product.create(payload);
+    const product = await PendingProduct.create(payload);
 
     res.status(201).json({
       success: true,
-      message: "Product created successfully",
-      data: product,
+      message: "Product sent for admin approval",
+      data: product
     });
 
   } catch (err) {
-    next(err);
+    res.status(400).json({
+      success: false,
+      message: err.message
+    });
   }
 };
-
-
 /* 
 
 
