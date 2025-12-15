@@ -73,7 +73,6 @@ exports.getMyProducts = async (req, res, next) => {
   }
 }; 
 
-
 exports.createProduct = async (req, res, next) => {
   try {
     let payload = {

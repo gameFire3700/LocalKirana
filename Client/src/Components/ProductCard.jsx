@@ -1,10 +1,12 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { ShoppingCart, Star } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const BASE_URL = "http://localhost:5000";
 
 const ProductCard = ({ product, addToCart }) => {
+  const navigate = useNavigate();
   const rating = product.rating || 0;
   const reviews = product.reviews || 0;
 
@@ -29,6 +31,7 @@ const ProductCard = ({ product, addToCart }) => {
   return (
     <motion.div
       whileHover={{ scale: 1.03 }}
+      onClick={() => navigate(`/product/${product._id}`)}
       className="w-full max-w-xs bg-white rounded-xl shadow-md border border-gray-200 hover:shadow-xl transition-all cursor-pointer"
     >
       {/* Product Image */}
@@ -82,7 +85,11 @@ const ProductCard = ({ product, addToCart }) => {
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => addToCart(product)}
+            onClick={(e) => {
+              e.stopPropagation(); // prevent card click
+              addToCart(product);
+            }}
+            
             className="w-full bg-[#28A745] hover:bg-[#28A745]/90 active:bg-[#28A745]/80 text-white py-2 rounded-full flex items-center justify-center gap-2 font-medium shadow-md transition cursor-pointer"
           >
             <ShoppingCart size={18} /> Add to Cart

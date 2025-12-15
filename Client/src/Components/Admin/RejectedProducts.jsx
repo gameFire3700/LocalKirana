@@ -6,48 +6,71 @@ import {
   Tag,
   Store,
   IndianRupee,
-  X
+  X,
+  CheckCircle,
+  Ban,
 } from "lucide-react";
-import axios from "axios";
 
-const ApprovedProducts = () => {
+// ✅ Import admin API functions
+import {
+  getRejectedProducts,
+  approveProduct,
+  rejectProduct,
+} from "../../api/adminApi";
+
+const RejectedProducts = () => {
   const [products, setProducts] = useState([]);
   const [selected, setSelected] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchApprovedProducts = async () => {
+  // ✅ Fetch rejected products using API helper
+  const fetchRejectedProducts = async () => {
     try {
-      const res = await axios.get(
-        "http://localhost:5000/admin/products/approved",
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
-          },
-        }
-      );
-
+      const res = await getRejectedProducts();
       setProducts(res.data.products || []);
     } catch (error) {
-      console.log("Error fetching approved products", error);
+      console.log("Error fetching rejected products", error);
     } finally {
       setLoading(false);
     }
   };
 
+  // ✅ Handle Approve
+  const handleApprove = async (id) => {
+    try {
+      await approveProduct(id);
+      fetchRejectedProducts();
+      alert("Product Approved Successfully!");
+    } catch (error) {
+      console.log("Error Approving", error);
+    }
+  };
+
+  // ✅ Handle Reject Again
+  const handleReject = async (id) => {
+    try {
+      await rejectProduct(id);
+      fetchRejectedProducts();
+      alert("Product Rejected Again!");
+    } catch (error) {
+      console.log("Error Rejecting", error);
+    }
+  };
+
   useEffect(() => {
-    fetchApprovedProducts();
+    fetchRejectedProducts();
   }, []);
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
-      <h1 className="text-3xl font-bold text-green-700 mb-6">
-        Approved Products
+      <h1 className="text-3xl font-bold text-red-600 mb-6">
+        Rejected Products
       </h1>
 
       {loading ? (
-        <p className="text-gray-600 text-lg">Loading approved products...</p>
+        <p className="text-gray-600 text-lg">Loading rejected products...</p>
       ) : products.length === 0 ? (
-        <p className="text-gray-600 text-lg">No approved products found.</p>
+        <p className="text-gray-600 text-lg">No rejected products found.</p>
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {products.map((product) => (
@@ -69,12 +92,12 @@ const ApprovedProducts = () => {
                   className="w-full h-full object-cover"
                 />
 
-                <span className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded-lg text-xs font-semibold shadow">
-                  Approved
+                <span className="absolute top-2 right-2 bg-red-600 text-white px-2 py-1 rounded-lg text-xs font-semibold shadow">
+                  Rejected
                 </span>
               </div>
 
-              <h2 className="text-xl font-bold text-green-700">{product.name}</h2>
+              <h2 className="text-xl font-bold text-red-700">{product.name}</h2>
 
               <p className="text-gray-700 flex items-center gap-2 mt-1 font-semibold">
                 <IndianRupee size={18} /> {product.price}
@@ -91,13 +114,26 @@ const ApprovedProducts = () => {
                 >
                   <Eye size={18} /> View
                 </button>
+
+                <button
+                  onClick={() => handleApprove(product._id)}
+                  className="flex-1 bg-green-600 text-white rounded-xl py-2 flex items-center justify-center gap-2 hover:bg-green-700 transition-colors duration-300"
+                >
+                  <CheckCircle size={18} /> Approve
+                </button>
               </div>
+
+              <button
+                onClick={() => handleReject(product._id)}
+                className="mt-3 bg-red-600 text-white rounded-xl py-2 flex items-center justify-center gap-2 hover:bg-red-700 transition-colors duration-300"
+              >
+                <Ban size={18} /> Reject Again
+              </button>
             </motion.div>
           ))}
         </div>
       )}
 
-      {/* Modal */}
       <AnimatePresence>
         {selected && (
           <Modal selected={selected} onClose={() => setSelected(null)} />
@@ -107,7 +143,7 @@ const ApprovedProducts = () => {
   );
 };
 
-// ⭐ Modal Component (Full product details)
+// ⭐ Modal Component
 const Modal = ({ selected, onClose }) => (
   <motion.div
     initial={{ opacity: 0 }}
@@ -128,7 +164,7 @@ const Modal = ({ selected, onClose }) => (
         <X size={20} />
       </button>
 
-      <h2 className="text-2xl font-bold text-green-700 mb-4 flex items-center gap-2">
+      <h2 className="text-2xl font-bold text-red-600 mb-4 flex items-center gap-2">
         <Package size={22} /> Product Details
       </h2>
 
@@ -161,57 +197,25 @@ const Modal = ({ selected, onClose }) => (
         <Info label="Unit" value={selected.unit} />
         <Info label="Product Status" value={selected.product_status} />
         <Info label="Available" value={selected.is_available ? "Yes" : "No"} />
-        <Info label="Featured" value={selected.is_featured ? "Yes" : "No"} />
-        <Info label="Created By" value={selected.created_by} />
-        <Info label="Updated By" value={selected.updated_by} />
 
-        <Info
-          label="Created At"
-          value={new Date(selected.createdAt).toLocaleString()}
-        />
-        <Info
-          label="Updated At"
-          value={new Date(selected.updatedAt).toLocaleString()}
-        />
-
-        <Info
-          label="Manufacture Date"
-          value={new Date(selected.manufacture_date).toLocaleDateString()}
-        />
-        <Info
-          label="Expiry Date"
-          value={new Date(selected.expiry_date).toLocaleDateString()}
-        />
-
-        {/* Tags */}
         <div>
           <p className="font-semibold text-gray-700 mb-1">Tags:</p>
           <div className="flex gap-2 flex-wrap">
             {selected.tags?.map((t, i) => (
               <span
                 key={i}
-                className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm flex items-center gap-1"
+                className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm flex items-center gap-1"
               >
                 <Tag size={14} /> {t}
               </span>
             ))}
           </div>
         </div>
-
-        {/* Dimensions */}
-        <div>
-          <p className="font-semibold text-gray-700 mb-1">Dimensions:</p>
-          <p className="text-gray-600">
-            {selected.dimensions?.length} x {selected.dimensions?.width} x{" "}
-            {selected.dimensions?.height}
-          </p>
-        </div>
       </div>
     </motion.div>
   </motion.div>
 );
 
-// Info Row
 const Info = ({ label, value }) => (
   <div className="flex gap-3">
     <p className="w-44 font-semibold text-gray-700">{label}:</p>
@@ -219,4 +223,4 @@ const Info = ({ label, value }) => (
   </div>
 );
 
-export default ApprovedProducts;
+export default RejectedProducts;

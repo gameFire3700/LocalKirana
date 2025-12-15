@@ -19,7 +19,8 @@ router.delete('/retailer/delete/:id', retailerProtect, productController.deleteO
 // ================== PUBLIC ROUTES (KEEP LAST) ==================
 
 router.get('/', productController.getAllProducts);
-router.get('/product/:id', productController.getProductById);   // SAFE FIX
+
+router.get('/:id', productController.getProductById);   // SAFE FIX
 
 
 module.exports = router;

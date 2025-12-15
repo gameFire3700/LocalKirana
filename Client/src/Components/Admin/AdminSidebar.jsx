@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom"; // ✅ added useNavigate
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   Users,
@@ -8,13 +8,14 @@ import {
   Menu,
   X,
   PackageSearch,
-  CheckCircle2
+  CheckCircle2,
+  Ban
 } from "lucide-react";
 
 const AdminSidebar = () => {
   const [open, setOpen] = useState(false);
   const location = useLocation();
-  const navigate = useNavigate(); // ✅ for redirection
+  const navigate = useNavigate();
 
   const isActive = (path) =>
     location.pathname === path
@@ -22,8 +23,8 @@ const AdminSidebar = () => {
       : "text-gray-800 hover:bg-gray-100";
 
   const handleLogout = () => {
-    localStorage.removeItem("adminToken"); // ✅ remove token
-    navigate("/admin/login"); // ✅ redirect to admin login page
+    localStorage.removeItem("adminToken");
+    navigate("/admin/login");
   };
 
   return (
@@ -75,9 +76,17 @@ const AdminSidebar = () => {
             <CheckCircle size={18} /> Approved Products
           </Link>
 
+          {/* ⭐ NEW: Rejected Products */}
+          <Link
+            to="/admin/rejected-products"
+            className={`flex items-center gap-3 p-3 rounded-lg ${isActive("/admin/rejected-products")}`}
+          >
+            <Ban size={18} /> Rejected Products
+          </Link>
+
           <div className="mt-4 border-t pt-4">
             <button
-              onClick={handleLogout} // ✅ logout handler
+              onClick={handleLogout}
               className="flex items-center gap-3 p-3 rounded-lg text-red-600 hover:bg-red-50 w-full text-left"
             >
               <LogOut size={18} /> Logout

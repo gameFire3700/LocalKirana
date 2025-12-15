@@ -29,6 +29,7 @@ export const getPendingProducts = () => {
   });
 };
 
+
 // GET approved products
 export const getApprovedProducts = () => {
   const token = localStorage.getItem("adminToken");
@@ -57,6 +58,15 @@ export const approveProduct = (id) => {
   );
 };
 
+// GET rejected products
+export const getRejectedProducts = () => {
+  const token = localStorage.getItem("adminToken");
+  return axiosClient.get("/admin/products/rejected", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+};
+
+
 // REJECT product
 export const rejectProduct = (id) => {
   const token = localStorage.getItem("adminToken");
@@ -68,3 +78,4 @@ export const rejectProduct = (id) => {
     }
   );
 };
+

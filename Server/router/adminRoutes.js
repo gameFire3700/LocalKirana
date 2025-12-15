@@ -4,8 +4,9 @@ const { registerAdmin, loginAdmin } = require("../controllers/adminAuthControlle
 const { adminProtect, authorizeRoles, requireAdminSecret } = require("../middleware/adminMiddleware");
 const { approveProduct, rejectProduct } = require("../controllers/adminProductController");
 const { getAllRetailers } = require("../controllers/adminRetailerController");
-const {getPendingProducts}= require ("../controllers/adminProductController")
-const {getApprovedProducts}= require ("../controllers/adminProductController")
+const {getPendingProducts}= require ("../controllers/adminProductController");
+const {getApprovedProducts}= require ("../controllers/adminProductController");
+const {getRejectedProducts}= require ("../controllers/adminProductController");
 
 
 const router = express.Router();
@@ -36,5 +37,7 @@ router.put("/products/approve/:id", adminProtect, authorizeRoles("SuperAdmin","A
 router.put("/products/reject/:id", adminProtect, authorizeRoles("SuperAdmin","Approver","Admin"), rejectProduct);
 
 router.get("/products/approved", adminProtect, getApprovedProducts);
+
+router.get("/products/rejected", adminProtect, getRejectedProducts);
 
 module.exports = router;

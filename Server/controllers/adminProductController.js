@@ -67,9 +67,34 @@ const getApprovedProducts = async (req, res) => {
   }
 };
 
+// GET all rejected products
+const getRejectedProducts = async (req, res) => {
+  try {
+    const products = await Product.find({
+      product_status: "rejected",
+      is_deleted: false
+    }).sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      count: products.length,
+      products
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: error.message
+    });
+  }
+};
+
+
 module.exports = {
   getPendingProducts,
   approveProduct,
   rejectProduct,
   getApprovedProducts,
+  getRejectedProducts,
 };

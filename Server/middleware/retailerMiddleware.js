@@ -2,31 +2,48 @@ const jwt = require("jsonwebtoken");
 const Retailer = require("../models/Retailer");
 
 exports.retailerProtect = async (req, res, next) => {
-  const authHeader = req.headers.authorization;
-
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res.status(401).json({ message: "No token provided" });
-  }
-
-  const token = authHeader.split(" ")[1];
-
   try {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({
+        success: false,
+        message: "No token provided"
+      });
+    }
+
+    const token = authHeader.split(" ")[1];
+
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // Must be retailer
+    // ✅ Must be retailer
     if (decoded.type !== "retailer") {
-      return res.status(403).json({ message: "Access denied for non-retailers" });
+      return res.status(403).json({
+        success: false,
+        message: "Access denied"
+      });
     }
 
-    req.user = await Retailer.findById(decoded.id);
+    const retailer = await Retailer.findById(decoded.id).select("-password");
 
-    if (!req.user) {
-      return res.status(404).json({ message: "Retailer not found" });
+    if (!retailer) {
+      return res.status(404).json({
+        success: false,
+        message: "Retailer not found"
+      });
     }
+
+    // ✅ VERY IMPORTANT
+    req.user = retailer;        // 👈 controller uses this
+    req.retailer = retailer;    // optional
 
     next();
 
   } catch (err) {
-    return res.status(401).json({ message: "Invalid or expired token" });
+    console.error("RETAILER AUTH ERROR:", err.message);
+    return res.status(401).json({
+      success: false,
+      message: "Invalid or expired token"
+    });
   }
 };

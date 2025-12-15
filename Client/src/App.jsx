@@ -8,6 +8,8 @@ import Login from "./Components/Login";
 import AboutUs from "./Components/AboutUs";
 import Features from "./Components/Features";
 import ContactUs from "./Components/ContactUs"; 
+import ProductDetail from "./Components/ProductDetail";
+
 //import Dashboard from "./Components/Dashboard";
 import AdminDashboard from "./Components/Admin/AdminDashboard";
 
@@ -29,6 +31,7 @@ import AdminRetailers from "./Components/Admin/AdminRetailers";
 import AdminLayout from "./Layout/AdminLayout";
 import ProductApproval from "./Components/Admin/ProductApproval";
 import ApprovedProducts from "./Components/Admin/ApprovedProducts";
+import RejectedProducts from "./Components/Admin/RejectedProducts";
 
 import SearchResults from "./Pages/SearchResults"; 
 const Layout = () => (
@@ -60,6 +63,8 @@ const router = createBrowserRouter([
       // Retailer auth pages (they can stay here because they need navbar)
       { path: "retailer/login", element: <RetailerLogin /> },
       { path: "retailer/register", element: <RetailerRegister /> },
+      { path: "product/:id", element: <ProductDetail/> },
+
     ],
     errorElement: <h2 className="text-center text-red-500 mt-10">❌ Page Not Found</h2>,
   },
@@ -96,6 +101,8 @@ const router = createBrowserRouter([
       { path: "retailers", element: <AdminRetailers/> },
       { path: "product-approval", element: <ProductApproval /> },
       { path: "approved-products", element: <ApprovedProducts /> },
+      { path: "rejected-products", element: <RejectedProducts/> },
+
       
     ],
   },

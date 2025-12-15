@@ -38,7 +38,7 @@ const retailerRoutes = require("./router/retailerRoutes");
 const adminAuthRoutes = require("./router/adminRoutes");
 const authRoutes = require('./router/authUserRoutes');
 const categoryRoutes = require("./router/categoryRoutes");
-
+//const retailerProductRoutes = require("./routes/retailerProductRoutes");
 
 const errorHandler = require('./middleware/errorHandler');
 
@@ -60,8 +60,8 @@ app.use('/auth', authRoutes);
 app.use("/admin", adminAuthRoutes);
 app.use("/images", express.static("images"));
 
-
-app.use("/uploads", express.static("uploads"));
+           
+app.use("/uploads", express.static("uploads"));  
 
 // ✅ 404 handler
 app.use((req, res, next) => {
