@@ -19,7 +19,8 @@ import RetailerLogin from "./Pages/RetailerLogin";
 import RetailerRegister from "./Pages/RetailerRegister";
 import RetailerDashboard from "./Components/Retailer/RetailerDashboard";
 import RetailerProducts from "./Components/Retailer/RetailerProducts";
-import RetailerAddProduct from "./Components/Retailer/RetailerAddProduct";
+import RetailerProductAdd from "./Components/Retailer/RetailerProductAdd";
+
 import RetailerEditProduct from "./Components/Retailer/RetailerEditProduct";
 import RetailerInventory from "./Components/Retailer/RetailerInventory";
 import RetailerLayout from "./Layout/RetailerLayout";
@@ -32,8 +33,14 @@ import AdminLayout from "./Layout/AdminLayout";
 import ProductApproval from "./Components/Admin/ProductApproval";
 import ApprovedProducts from "./Components/Admin/ApprovedProducts";
 import RejectedProducts from "./Components/Admin/RejectedProducts";
+import AdminAddCategory from "./Components/Admin/AdminAddCategory";
+import AdminAddSubCategory from "./Components/Admin/AdminAddSubCategory";
 
 import SearchResults from "./Pages/SearchResults"; 
+import AdminAddMasterProduct from "./Components/Admin/AdminAddMasterProduct";
+
+import RetailerPendingProduct from "./Components/Retailer/RetailerPendingProduct";
+
 const Layout = () => (
   <div className="flex flex-col min-h-screen"> 
     <Navbar />
@@ -71,15 +78,18 @@ const router = createBrowserRouter([
 
   // ---------------- Retailer Panel Layout ----------------
   {
-    path: "/retailer",
-    element: <RetailerLayout />,   // NO NAVBAR, NO FOOTER
-    children: [
-      { path: "dashboard", element: <RetailerDashboard /> },
-      { path: "products", element: <RetailerProducts /> },
-      { path: "add-product", element: <RetailerAddProduct /> },
-      { path: "edit-product/:id", element: <RetailerEditProduct /> },
-      { path: "inventory", element: <RetailerInventory /> },
-    ],
+     path: "/retailer",
+  element: <RetailerLayout />,
+  children: [
+    { path: "dashboard", element: <RetailerDashboard /> },
+    { path: "products", element: <RetailerProducts /> },
+    { path: "retailer-product-add", element: <RetailerProductAdd /> },
+    { path: "inventory", element: <RetailerInventory /> },
+    { path: "edit-product/:id", element: <RetailerEditProduct /> },
+
+    // ✅ FIXED ROUTE
+    { path: "product-pending", element: <RetailerPendingProduct /> },
+  ],
     errorElement: <h2    className="text-center text-red-500 mt-10">❌ Page Not Found</h2>,
   },  
    // ---------------- Admin Panel Layout (SEPARATE UI) ----------------
@@ -102,7 +112,9 @@ const router = createBrowserRouter([
       { path: "product-approval", element: <ProductApproval /> },
       { path: "approved-products", element: <ApprovedProducts /> },
       { path: "rejected-products", element: <RejectedProducts/> },
-
+      { path: "category-create", element: <AdminAddCategory/> },
+      { path: "subcategories-create", element: <AdminAddSubCategory/> },
+      { path: "Add-Master-Product", element: <AdminAddMasterProduct/> },
       
     ],
   },

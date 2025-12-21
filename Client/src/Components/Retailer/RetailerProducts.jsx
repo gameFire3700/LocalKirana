@@ -1,116 +1,164 @@
 import React, { useEffect, useState } from "react";
-import RetailerSidebar from "./RetailerSidebar";
-import { fetchMyProducts, deleteProduct } from "../../api/retailerApi";
-import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
+import {
+  Package,
+  IndianRupee,
+  ImageIcon,
+  Edit,
+  Trash2
+} from "lucide-react";
+import { getRetailerProducts, deleteRetailerProduct } from "../../api/retailerApi";
+import { useNavigate } from "react-router-dom";
 
-const RetailerProducts = () => {
+const BASE_URL = "http://localhost:5000";
+
+const RetailerProduct = () => {
+  const navigate = useNavigate();
+
   const [products, setProducts] = useState([]);
-
-  const load = async () => {
-    const res = await fetchMyProducts();
-    setProducts(res.data.products);
-  };
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    load();
+    loadProducts();
   }, []);
 
-  const handleDelete = async (id) => {
-    if (!confirm("❌ Are you sure you want to delete this product?")) return;
-
-    await deleteProduct(id);
-    load();
-    alert("Deleted successfully!");
+  const loadProducts = async () => {
+    try {
+      setLoading(true);
+      const res = await getRetailerProducts();
+      setProducts(res.data?.data || []);
+    } catch (err) {
+      console.error("Retailer products fetch error:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this product?")) return;
+
+    try {
+      await deleteRetailerProduct(id);
+      setProducts((prev) => prev.filter((p) => p._id !== id));
+      alert("Product deleted successfully");
+    } catch (err) {
+      console.error(err);
+      alert("Delete failed");
+    }
+  };
+
+  if (loading) {
+    return <div className="p-6">Loading your products...</div>;
+  }
+
   return (
-    <div className="flex bg-[#F8F9FA] min-h-screen">
-      <RetailerSidebar />
-
-      <main className="ml-0 lg:ml-64 p-8 w-full">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-8">
-          <h2 className="text-3xl font-bold text-[#343A40]">My Products</h2>
-
-          {/* Add Product Button */}
-          <Link
-            to="/retailer/add-product"
-            className="px-5 py-3 bg-[#28A745] hover:bg-[#218838] text-white font-semibold rounded-xl shadow transition"
-          >
-            + Add New Product
-          </Link>
+    <div className="min-h-screen bg-gray-100 p-6">
+      {/* HEADER */}
+      <div className="flex items-center gap-4 mb-8">
+        <div className="p-4 bg-green-600 text-white rounded-xl shadow">
+          <Package size={28} />
         </div>
+        <h1 className="text-3xl font-bold text-gray-800">
+          My Products
+        </h1>
+      </div>
 
-        {/* No Products */}
-        {products.length === 0 ? (
-          <div className="text-center text-gray-600 text-xl bg-white p-10 rounded-xl shadow">
-            No products added yet.
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8">
-            {products.map((p) => (
-              <div
-                key={p._id}
-                className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all p-5 border border-[#D4EDDA]"
-              >
-                {/* Product Image */}
-                <div className="w-full h-48 overflow-hidden rounded-xl mb-4">
+      {products.length === 0 ? (
+        <p className="text-gray-600">
+          You have not added any products yet.
+        </p>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {products.map((product) => (
+            <motion.div
+              key={product._id}
+              whileHover={{ scale: 1.02 }}
+              className="bg-white rounded-2xl shadow p-5"
+            >
+              {/* IMAGE */}
+              <div className="h-40 bg-gray-100 rounded-xl flex items-center justify-center overflow-hidden">
+                {product.image ? (
                   <img
-                    src={`http://localhost:5000${p.image}`}
-                    alt={p.name}
-                    className="w-full h-full object-cover hover:scale-110 transition duration-300"
+                    src={`${BASE_URL}${product.image}`}
+                    alt={product.product_name}
+                    className="h-full object-contain"
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = "/no-image.png";
+                    }}
                   />
-                </div>
+                ) : (
+                  <ImageIcon size={48} className="text-gray-400" />
+                )}
+              </div>
 
-                {/* Product Info */}
-                <h3 className="text-xl font-bold text-[#343A40]">{p.name}</h3>
+              {/* INFO */}
+              <h3 className="mt-3 font-semibold text-lg line-clamp-2">
+                {product.product_name || product.name}
+              </h3>
 
-                <p className="text-gray-600 mt-1">
-                  <span className="font-semibold text-[#28A745]">₹{p.price}</span>
-                  <span className="ml-3 text-gray-500">Stock: {p.stock}</span>
-                </p>
+              <p className="text-sm text-gray-500">
+                {product.category?.name || "General"}
+              </p>
 
-                <p className="text-gray-500 text-sm mt-1">
-                  {p.brand && <span className="mr-3">Brand: {p.brand}</span>}
-                  {p.unit && <span>Unit: {p.unit}</span>}
-                </p>
+              {/* PRICE & STOCK */}
+              <div className="flex justify-between items-center mt-3">
+                <span className="flex items-center gap-1 font-bold text-green-600">
+                  <IndianRupee size={16} /> {product.price}
+                </span>
 
-                {/* Status Badge */}
-                <div className="mt-3">
-                  <span
-                    className={`px-3 py-1 text-sm rounded-full ${
-                      p.is_available
+                <span
+                  className={`text-xs px-2 py-1 rounded-full font-semibold
+                    ${
+                      product.stock > 0
                         ? "bg-green-100 text-green-700"
                         : "bg-red-100 text-red-700"
                     }`}
-                  >
-                    {p.is_available ? "Available" : "Unavailable"}
-                  </span>
-                </div>
-
-                {/* Buttons */}
-                <div className="flex gap-3 mt-5">
-                  <Link
-                    to={`/retailer/edit-product/${p._id}`}
-                    className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-center font-semibold transition"
-                  >
-                    Edit
-                  </Link>
-
-                  <button
-                    onClick={() => handleDelete(p._id)}
-                    className="flex-1 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold transition"
-                  >
-                    Delete
-                  </button>
-                </div>
+                >
+                  {product.stock > 0 ? "In Stock" : "Out of Stock"}
+                </span>
               </div>
-            ))}
-          </div>
-        )}
-      </main>
+
+              {/* STATUS */}
+              <div className="mt-3">
+                <span
+                  className={`text-xs px-3 py-1 rounded-full font-semibold
+                    ${
+                      product.status === "approved"
+                        ? "bg-green-100 text-green-800"
+                        : product.status === "rejected"
+                        ? "bg-red-100 text-red-800"
+                        : "bg-yellow-100 text-yellow-800"
+                    }`}
+                >
+                  {(product.status || "pending").toUpperCase()}
+                </span>
+              </div>
+
+              {/* ACTIONS */}
+              <div className="flex gap-3 mt-4">
+                <button
+                  onClick={() =>
+                    navigate(`/retailer/products/edit/${product._id}`)
+                  }
+                  className="flex items-center gap-1 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm"
+                >
+                  <Edit size={16} /> Edit
+                </button>
+
+                <button
+                  onClick={() => handleDelete(product._id)}
+                  className="flex items-center gap-1 px-4 py-2 bg-red-600 text-white rounded-lg text-sm"
+                >
+                  <Trash2 size={16} /> Delete
+                </button>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
 
-export default RetailerProducts;
+export default RetailerProduct;

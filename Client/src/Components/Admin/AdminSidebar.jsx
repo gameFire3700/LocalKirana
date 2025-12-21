@@ -7,9 +7,10 @@ import {
   LogOut,
   Menu,
   X,
-  PackageSearch,
   CheckCircle2,
-  Ban
+  Ban,
+  Layers,
+  List
 } from "lucide-react";
 
 const AdminSidebar = () => {
@@ -19,8 +20,8 @@ const AdminSidebar = () => {
 
   const isActive = (path) =>
     location.pathname === path
-      ? "bg-green-600 text-white"
-      : "text-gray-800 hover:bg-gray-100";
+      ? "bg-gradient-to-r from-green-600 to-green-500 text-white shadow-md"
+      : "text-gray-700 hover:bg-green-50";
 
   const handleLogout = () => {
     localStorage.removeItem("adminToken");
@@ -29,65 +30,137 @@ const AdminSidebar = () => {
 
   return (
     <>
+      {/* Mobile Menu Button */}
       <button
-        onClick={() => setOpen(!open)}
-        className="lg:hidden fixed top-4 left-4 z-50 bg-green-600 text-white p-2 rounded-lg shadow"
+        onClick={() => setOpen(true)}
+        className="lg:hidden fixed top-4 left-4 z-50 bg-green-600 text-white p-2.5 rounded-xl shadow-lg active:scale-95 transition"
       >
-        {open ? <X size={20} /> : <Menu size={20} />}
+        <Menu size={20} />
       </button>
 
+      {/* Overlay */}
+      {open && (
+        <div
+          onClick={() => setOpen(false)}
+          className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 lg:hidden"
+        />
+      )}
+
+      {/* Sidebar */}
       <aside
-        className={`fixed top-0 left-0 h-full w-64 bg-white border-r shadow-md transform transition-transform z-40 ${
-          open ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
-        }`}
+        className={`fixed top-0 left-0 h-full w-64 z-50
+        bg-white/95 backdrop-blur-xl
+        shadow-2xl rounded-r-3xl
+        transform transition-transform duration-300 ease-in-out
+        ${open ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
       >
-        <div className="p-5 border-b">
-          <h1 className="text-2xl font-bold text-green-700">Admin Panel</h1>
-          <p className="text-sm text-gray-500 mt-1">Manage the store</p>
+        {/* Header */}
+        <div className="p-6 flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-extrabold text-green-700">
+              Admin Panel
+            </h1>
+            <p className="text-xs text-gray-500 mt-1">
+              Manage the store
+            </p>
+          </div>
+
+          <button
+            onClick={() => setOpen(false)}
+            className="lg:hidden text-gray-500 hover:text-gray-700"
+          >
+            <X size={22} />
+          </button>
         </div>
 
-        <nav className="p-4 flex flex-col gap-2">
+        {/* Menu */}
+        <nav className="px-4 flex flex-col gap-2">
 
           <Link
             to="/admin/dashboard"
-            className={`flex items-center gap-3 p-3 rounded-lg ${isActive("/admin/dashboard")}`}
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition ${isActive("/admin/dashboard")}`}
           >
-            <LayoutDashboard size={18} /> Dashboard
+            <span className="p-2 bg-white/40 rounded-lg">
+              <LayoutDashboard size={18} />
+            </span>
+            Dashboard
           </Link>
 
           <Link
             to="/admin/retailers"
-            className={`flex items-center gap-3 p-3 rounded-lg ${isActive("/admin/retailers")}`}
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition ${isActive("/admin/retailers")}`}
           >
-            <Users size={18} /> Retailers
+            <span className="p-2 bg-white/40 rounded-lg">
+              <Users size={18} />
+            </span>
+            Retailers
+          </Link>
+
+          <Link
+            to="category-create"
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition ${isActive("/category-create")}`}
+          >
+            <span className="p-2 bg-white/40 rounded-lg">
+              <Layers size={18} />
+            </span>
+            Categories
+          </Link>
+
+          <Link
+            to="subcategories-create"
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition ${isActive("subcategories-create")}`}
+          >
+            <span className="p-2 bg-white/40 rounded-lg">
+              <List size={18} />
+            </span>
+            Sub Categories
+          </Link>
+
+          <Link
+            to="Add-Master-Product"
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition ${isActive("Add-Master-Product")}`}
+          >
+            <span className="p-2 bg-white/40 rounded-lg">
+              <List size={18} />
+            </span>
+            Add Master Product
           </Link>
 
           <Link
             to="/admin/product-approval"
-            className={`flex items-center gap-3 p-3 rounded-lg ${isActive("/admin/product-approval")}`}
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition ${isActive("/admin/product-approval")}`}
           >
-            <CheckCircle2 size={18} /> Product Approval
+            <span className="p-2 bg-white/40 rounded-lg">
+              <CheckCircle2 size={18} />
+            </span>
+            Product Approval
           </Link>
 
           <Link
             to="/admin/approved-products"
-            className={`flex items-center gap-3 p-3 rounded-lg ${isActive("/admin/approved-products")}`}
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition ${isActive("/admin/approved-products")}`}
           >
-            <CheckCircle size={18} /> Approved Products
+            <span className="p-2 bg-white/40 rounded-lg">
+              <CheckCircle size={18} />
+            </span>
+            Approved Products
           </Link>
 
-          {/* ⭐ NEW: Rejected Products */}
           <Link
             to="/admin/rejected-products"
-            className={`flex items-center gap-3 p-3 rounded-lg ${isActive("/admin/rejected-products")}`}
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition ${isActive("/admin/rejected-products")}`}
           >
-            <Ban size={18} /> Rejected Products
+            <span className="p-2 bg-white/40 rounded-lg">
+              <Ban size={18} />
+            </span>
+            Rejected Products
           </Link>
 
-          <div className="mt-4 border-t pt-4">
+          {/* Logout */}
+          <div className="mt-6 pt-4">
             <button
               onClick={handleLogout}
-              className="flex items-center gap-3 p-3 rounded-lg text-red-600 hover:bg-red-50 w-full text-left"
+              className="flex items-center gap-3 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50 w-full font-semibold transition"
             >
               <LogOut size={18} /> Logout
             </button>

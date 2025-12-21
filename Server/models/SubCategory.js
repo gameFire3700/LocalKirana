@@ -1,11 +1,11 @@
-// models/Category.js
+// models/SubCategory.js
 const mongoose = require("mongoose");
 
-const categorySchema = new mongoose.Schema(
+const subCategorySchema = new mongoose.Schema(
   {
-    category_id: {
+    subcategory_id: {
       type: Number,
-      required: false,
+      required: true,
       unique: true,
       index: true
     },
@@ -13,9 +13,7 @@ const categorySchema = new mongoose.Schema(
     name: {
       type: String,
       required: true,
-      trim: true,
-      minlength: 2,
-      maxlength: 100
+      trim: true
     },
 
     slug: {
@@ -25,10 +23,10 @@ const categorySchema = new mongoose.Schema(
       trim: true
     },
 
-    description: {
-      type: String,
-      default: "",
-      maxlength: 500
+    category: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category",
+      required: true
     },
 
     image_url: {
@@ -45,10 +43,6 @@ const categorySchema = new mongoose.Schema(
       type: Number,
       default: 0
     },
-
-    meta_title: String,
-    meta_description: String,
-    meta_keywords: [String],
 
     created_by: {
       type: mongoose.Schema.Types.ObjectId,
@@ -71,7 +65,7 @@ const categorySchema = new mongoose.Schema(
 );
 
 /* Slug auto-generate */
-categorySchema.pre("save", function (next) {
+subCategorySchema.pre("save", function (next) {
   if (this.isModified("name")) {
     this.slug = this.name
       .toLowerCase()
@@ -81,4 +75,14 @@ categorySchema.pre("save", function (next) {
   next();
 });
 
-module.exports = mongoose.model("Category", categorySchema, "categories");
+/* Prevent duplicate subcategory in same category */
+subCategorySchema.index(
+  { name: 1, category: 1 },
+  { unique: true }
+);
+
+module.exports = mongoose.model(
+  "SubCategory",
+  subCategorySchema,
+  "subcategories"
+);

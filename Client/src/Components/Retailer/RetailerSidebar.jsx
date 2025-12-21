@@ -1,87 +1,120 @@
 import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
-  Menu, X, LayoutDashboard, Package, Plus, Boxes, LogOut
+  LayoutDashboard,
+  Package,
+  Plus,
+  Boxes,
+  LogOut,
+  Menu,
+  X
 } from "lucide-react";
 
 const RetailerSidebar = () => {
   const [open, setOpen] = useState(false);
-  const navigate = useNavigate();
   const location = useLocation();
+  const navigate = useNavigate();
 
-  const logout = () => {
+  const isActive = (path) =>
+    location.pathname === path
+      ? "bg-gradient-to-r from-green-600 to-green-500 text-white shadow"
+      : "text-gray-700 hover:bg-green-50";
+
+  const handleLogout = () => {
     localStorage.removeItem("retailerToken");
     navigate("/retailer/login");
   };
 
   const menuItems = [
-    { to: "/retailer/dashboard", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
-    { to: "/retailer/products", icon: <Package size={20} />, label: "My Products" },
-    { to: "/retailer/add-product", icon: <Plus size={20} />, label: "Add Product" },
-    { to: "/retailer/inventory", icon: <Boxes size={20} />, label: "Inventory" },
-  ];
+  { to: "/retailer/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+  { to: "/retailer/products", icon: Package, label: "My Products" },
+
+  // ✅ FIXED PATH
+  { to: "/retailer/product-pending", icon: Package, label: "Your Pending Product" },
+
+  { to: "/retailer/retailer-product-add", icon: Plus, label: "Add Product" },
+  { to: "/retailer/inventory", icon: Boxes, label: "Inventory" }
+];
 
   return (
     <>
-      {/* Mobile toggle button */}
+      {/* Mobile Menu Button */}
       <button
         onClick={() => setOpen(true)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-3 bg-[#28A745] text-white rounded-xl shadow-md hover:bg-[#218838] transition"
+        className="lg:hidden fixed top-4 left-4 z-50 bg-green-600 text-white p-2.5 rounded-xl shadow-lg active:scale-95 transition"
       >
-        <Menu />
+        <Menu size={20} />
       </button>
 
-      {/* SIDEBAR (border removed) */}
+      {/* Overlay */}
+      {open && (
+        <div
+          onClick={() => setOpen(false)}
+          className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 lg:hidden"
+        />
+      )}
+
+      {/* Sidebar */}
       <aside
         className={`
-          fixed top-0 left-0 h-full w-64 bg-white shadow-2xl z-40
-          transition-transform duration-300 ease-out
-          ${open ? "translate-x-0" : "-translate-x-64 lg:translate-x-0"}
+          fixed top-0 left-0 h-full w-64 z-50
+          bg-white/95 backdrop-blur-xl
+          shadow-2xl rounded-r-3xl
+          transform transition-transform duration-300 ease-in-out
+          ${open ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
         `}
       >
-        <div className="p-6 h-full flex flex-col">
-
-          <div className="flex items-center justify-between">
-            <h3 className="text-2xl font-bold text-[#28A745] tracking-wide">
+        {/* Header */}
+        <div className="p-6 flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-extrabold text-green-700">
               Retailer Panel
-            </h3>
-
-            <button className="lg:hidden text-gray-700" onClick={() => setOpen(false)}>
-              <X size={26} />
-            </button>
+            </h1>
+            <p className="text-xs text-gray-500 mt-1">
+              Manage your business
+            </p>
           </div>
 
-          <nav className="mt-10 flex flex-col gap-2 flex-grow">
-            {menuItems.map((item) => {
-              const active = location.pathname === item.to;
-
-              return (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  onClick={() => setOpen(false)}
-                  className={`
-                    flex items-center gap-3 px-4 py-3 rounded-xl font-medium 
-                    transition-all cursor-pointer
-                    ${
-                      active
-                        ? "bg-[#28A745] text-white shadow-md"
-                        : "text-gray-700 hover:bg-gray-100 hover:text-[#28A745]"
-                    }
-                  `}
-                >
-                  {item.icon}
-                  {item.label}
-                </Link>
-              );
-            })}
-          </nav>
-
           <button
-            onClick={logout}
-            className="flex items-center gap-3 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50 transition font-semibold"
+            onClick={() => setOpen(false)}
+            className="lg:hidden text-gray-500 hover:text-gray-700"
           >
-            <LogOut size={20} />
+            <X size={22} />
+          </button>
+        </div>
+
+        {/* Menu */}
+        <nav className="px-4 flex flex-col gap-2">
+          {menuItems.map(({ to, icon: Icon, label }) => (
+            <Link
+              key={to}
+              to={to}
+              onClick={() => setOpen(false)}
+              className={`
+                flex items-center gap-3 px-4 py-3 rounded-xl font-medium
+                transition-all duration-200
+                ${isActive(to)}
+              `}
+            >
+              <div className="p-2 rounded-lg bg-white/30">
+                <Icon size={18} />
+              </div>
+              {label}
+            </Link>
+          ))}
+        </nav>
+
+        {/* Logout */}
+        <div className="absolute bottom-0 w-full p-4">
+          <button
+            onClick={handleLogout}
+            className="
+              flex items-center gap-3 w-full px-4 py-3
+              rounded-xl text-red-600 font-semibold
+              hover:bg-red-50 transition
+            "
+          >
+            <LogOut size={18} />
             Logout
           </button>
         </div>

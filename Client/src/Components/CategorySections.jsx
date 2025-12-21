@@ -1,65 +1,78 @@
 import React, { useEffect, useState } from "react";
-import axiosClient from "../api/axiosClient";
 import { fetchProducts } from "../api/productApi";
+import axiosClient from "../api/axiosClient";
 import ProductCard from "./ProductCard";
-
-const categories = ["Grocery", "Beverages", "Snacks", "Household"];
 
 const CategorySections = () => {
   const [products, setProducts] = useState([]);
-  const [activeCategory, setActiveCategory] = useState("Grocery");
+  const [categories, setCategories] = useState([]);
+  const [activeCategory, setActiveCategory] = useState(null);
 
   useEffect(() => {
-    loadProducts();
+    loadAll();
   }, []);
 
-  const loadProducts = async () => {
-    const data = await fetchProducts();
-    if (data?.success) {
-      setProducts(data.products);
+  const loadAll = async () => {
+    try {
+      const [prodRes, catRes] = await Promise.all([
+        fetchProducts(),
+        axiosClient.get("/category/")
+      ]);
+
+      if (prodRes?.success) {
+        setProducts(prodRes.products || []);
+      }
+
+      const catData = catRes.data?.data || [];
+      setCategories(catData);
+
+      if (catData.length > 0) {
+        setActiveCategory(catData[0]._id);
+      }
+    } catch (err) {
+      console.error("Category section load error:", err);
     }
   };
 
-  const filterByCategory = (cat) => {
-    if (!Array.isArray(products)) return [];
-    return products.filter((p) => {
-      const category =
-        p.category?.name?.toLowerCase?.() ||
-        p.category?.toLowerCase?.() ||
-        "";
-      return category === cat.toLowerCase();
-    });
-  };
+  const filteredProducts = products.filter((p) => {
+    const catId =
+      typeof p.category === "string"
+        ? p.category
+        : p.category?._id;
+    return catId === activeCategory;
+  });
 
   return (
     <section className="w-full px-4 mt-10 mb-10 bg-[#F0FFF0] py-8">
 
-      {/* Category Buttons */}
+      {/* CATEGORY BUTTONS */}
       <div className="flex gap-4 overflow-x-auto pb-3">
         {categories.map((cat) => (
           <button
-            key={cat}
-            onClick={() => setActiveCategory(cat)}
+            key={cat._id}
+            onClick={() => setActiveCategory(cat._id)}
             className={`px-5 py-2 rounded-full border text-sm font-medium transition-all whitespace-nowrap
-            ${activeCategory === cat
-              ? "bg-green-600 text-white"
-              : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-            }`}
+              ${
+                activeCategory === cat._id
+                  ? "bg-green-600 text-white"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              }
+            `}
           >
-            {cat}
+            {cat.name}
           </button>
         ))}
       </div>
 
-      {/* Title */}
+      {/* TITLE */}
       <h2 className="text-lg font-bold mt-6 mb-2 text-gray-800">
-        {activeCategory} Products
+        {categories.find((c) => c._id === activeCategory)?.name || ""} Products
       </h2>
 
-      {/* Horizontal Product Slider */}
+      {/* PRODUCTS */}
       <div className="flex gap-4 overflow-x-auto pb-5 scrollbar-hide">
-        {filterByCategory(activeCategory)?.length > 0 ? (
-          filterByCategory(activeCategory).map((product) => (
+        {filteredProducts.length > 0 ? (
+          filteredProducts.map((product) => (
             <div key={product._id} className="min-w-[250px]">
               <ProductCard product={product} addToCart={() => {}} />
             </div>
@@ -68,7 +81,6 @@ const CategorySections = () => {
           <p className="text-gray-500">No products found in this category.</p>
         )}
       </div>
-
     </section>
   );
 };

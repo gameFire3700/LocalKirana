@@ -1,21 +1,22 @@
 import React, { useEffect, useState } from "react";
-import { fetchProducts } from "../api/productApi";
 import ProductCard from "./ProductCard";
+import { getApprovedRetailerProducts } from "../api/adminApi";
 
 const ProductList = () => {
   const [products, setProducts] = useState([]);
 
   useEffect(() => {
-    loadProducts();
+    loadApprovedProducts();
   }, []);
-   
-  const loadProducts = async () => {
-    const data = await fetchProducts();
-    console.log("PRODUCT API:", data);
 
-    if (data.success) {
-      setProducts(Array.isArray(data.data) ? data.data : []);
-    } else {
+  const loadApprovedProducts = async () => {
+    try {
+      const res = await getApprovedRetailerProducts();
+      const data = res.data?.data || [];
+
+      setProducts(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error("Load approved products error:", err);
       setProducts([]);
     }
   };
@@ -33,15 +34,27 @@ const ProductList = () => {
 
   return (
     <section className="p-6 bg-[#F0FFF0]">
-      
-
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
         {products.length > 0 ? (
           products.map((p) => (
-            <ProductCard key={p._id} product={p} addToCart={addToCart} />
+            <ProductCard
+              key={p._id}
+              product={{
+                _id: p._id,
+                name: p.product_master?.name,
+                category: p.product_master?.category,
+                price: p.price,
+                mrp: p.mrp,
+                stock: p.stock,
+                image: p.image || "/no-image.png"
+              }}
+              addToCart={addToCart}
+            />
           ))
         ) : (
-          <p className="text-center col-span-4 text-gray-500">No products found</p>
+          <p className="text-center col-span-4 text-gray-500">
+            No products available
+          </p>
         )}
       </div>
     </section>

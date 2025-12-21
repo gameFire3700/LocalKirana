@@ -1,27 +1,47 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import axios from "axios";
+import { getRetailerProductById } from "../api/adminApi";
 
 const BASE_URL = "http://localhost:5000";
 
 const ProductDetail = () => {
-  const { id } = useParams();
+  const { id } = useParams(); // retailer_product_id
   const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios
-      .get(`${BASE_URL}/product/${id}`)
-      .then((res) => {
-        setProduct(res.data.data);
-      })
-      .catch((err) => console.log(err));
+    fetchProduct();
   }, [id]);
 
-  if (!product)
+  const fetchProduct = async () => {
+    try {
+      const res = await getRetailerProductById(id);
+
+      if (res.data?.success) {
+        setProduct(res.data.data);
+      }
+    } catch (error) {
+      console.error("Load product detail error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /* ================= LOADING ================= */
+  if (loading)
     return (
       <div className="flex justify-center items-center h-[60vh]">
         <h2 className="text-xl font-semibold text-gray-600 animate-pulse">
           Loading product...
+        </h2>
+      </div>
+    );
+
+  if (!product)
+    return (
+      <div className="flex justify-center items-center h-[60vh]">
+        <h2 className="text-xl font-semibold text-red-500">
+          Product not found
         </h2>
       </div>
     );
@@ -33,8 +53,12 @@ const ProductDetail = () => {
         {/* ================= IMAGE ================= */}
         <div className="lg:w-1/3 w-full flex justify-center items-center bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl border shadow-inner p-6">
           <img
-            src={`${BASE_URL}${product.image}`}
-            alt={product.name}
+            src={
+              product.image
+                ? `${BASE_URL}${product.image}`
+                : "https://via.placeholder.com/400"
+            }
+            alt={product.product_master?.name}
             className="w-full max-h-[420px] object-contain transition-transform duration-300 hover:scale-105"
           />
         </div>
@@ -44,20 +68,28 @@ const ProductDetail = () => {
 
           {/* TITLE */}
           <h1 className="text-4xl font-bold text-gray-900 leading-tight">
-            {product.name}
+            {product.product_master?.name}
           </h1>
 
           {/* META */}
           <div className="mt-3 flex flex-wrap gap-4 text-sm text-gray-600">
             <span>
-              Brand: <b className="text-gray-800">{product.brand}</b>
+              Brand:{" "}
+              <b className="text-gray-800">
+                {product.product_master?.brand || "-"}
+              </b>
             </span>
             <span>
               Category:{" "}
-              <b className="text-gray-800">{product.category?.name}</b>
+              <b className="text-gray-800">
+                {product.category?.name || "-"}
+              </b>
             </span>
             <span>
-              SKU: <b className="text-gray-800">{product.sku}</b>
+              SKU:{" "}
+              <b className="text-gray-800">
+                {product.product_master?.sku || "-"}
+              </b>
             </span>
           </div>
 
@@ -66,19 +98,23 @@ const ProductDetail = () => {
             <span className="text-4xl font-extrabold text-green-600">
               ₹{product.price}
             </span>
-            <span className="line-through text-gray-500 text-lg">
-              ₹{product.mrp}
-            </span>
-            <span className="bg-green-100 text-green-700 text-sm font-semibold px-3 py-1 rounded-full">
-              {product.discount}% OFF
-            </span>
+            {product.mrp && (
+              <span className="line-through text-gray-500 text-lg">
+                ₹{product.mrp}
+              </span>
+            )}
+            {product.discount > 0 && (
+              <span className="bg-green-100 text-green-700 text-sm font-semibold px-3 py-1 rounded-full">
+                {product.discount}% OFF
+              </span>
+            )}
           </div>
 
           {/* STOCK */}
           <div className="mt-3">
             {product.stock > 0 ? (
               <span className="inline-flex items-center gap-2 bg-green-50 text-green-700 font-semibold px-4 py-2 rounded-full border border-green-200">
-                ✅ In Stock ({product.stock} left)
+                ✅ In Stock ({product.stock})
               </span>
             ) : (
               <span className="inline-flex items-center gap-2 bg-red-50 text-red-700 font-semibold px-4 py-2 rounded-full border border-red-200">
@@ -93,7 +129,7 @@ const ProductDetail = () => {
               Product Description
             </h3>
             <p className="text-gray-700 leading-relaxed">
-              {product.description}
+              {product.product_master?.description || "No description available"}
             </p>
           </div>
 
@@ -102,13 +138,18 @@ const ProductDetail = () => {
             <div className="bg-gray-50 p-4 rounded-xl border">
               <p className="text-gray-600">Manufacture Date</p>
               <p className="font-semibold text-gray-800">
-                {new Date(product.manufacture_date).toLocaleDateString()}
+                {product.manufacture_date
+                  ? new Date(product.manufacture_date).toLocaleDateString()
+                  : "-"}
               </p>
             </div>
+
             <div className="bg-gray-50 p-4 rounded-xl border">
               <p className="text-gray-600">Expiry Date</p>
               <p className="font-semibold text-gray-800">
-                {new Date(product.expiry_date).toLocaleDateString()}
+                {product.expiry_date
+                  ? new Date(product.expiry_date).toLocaleDateString()
+                  : "-"}
               </p>
             </div>
           </div>

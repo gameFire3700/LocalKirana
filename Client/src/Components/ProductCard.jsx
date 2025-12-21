@@ -17,7 +17,9 @@ const ProductCard = ({ product, addToCart }) => {
     const emptyStars = 5 - (fullStars + (halfStar ? 1 : 0));
 
     for (let i = 0; i < fullStars; i++)
-      stars.push(<Star key={`full-${i}`} size={16} fill="#FFD700" stroke="none" />);
+      stars.push(
+        <Star key={`full-${i}`} size={16} fill="#FFD700" stroke="none" />
+      );
 
     if (halfStar)
       stars.push(<Star key="half" size={16} fill="#FFD70080" stroke="none" />);
@@ -39,13 +41,19 @@ const ProductCard = ({ product, addToCart }) => {
         <img
           src={
             product.image
-              ? `${BASE_URL}${product.image}`
+              ? product.image.startsWith("http")
+                ? product.image
+                : `${BASE_URL}${product.image}`
               : product.imagePreview
               ? product.imagePreview
               : "https://via.placeholder.com/300"
           }
           alt={product.name}
           className="h-full object-contain"
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = "https://via.placeholder.com/300";
+          }}
         />
       </div>
 
@@ -89,7 +97,6 @@ const ProductCard = ({ product, addToCart }) => {
               e.stopPropagation(); // prevent card click
               addToCart(product);
             }}
-            
             className="w-full bg-[#28A745] hover:bg-[#28A745]/90 active:bg-[#28A745]/80 text-white py-2 rounded-full flex items-center justify-center gap-2 font-medium shadow-md transition cursor-pointer"
           >
             <ShoppingCart size={18} /> Add to Cart

@@ -79,3 +79,68 @@ export const rejectProduct = (id) => {
   );
 };
 
+export const createCategory = (formdata) =>{
+ return axiosClient.post("/category/create", formdata,
+  {
+      headers: {
+        "Content-Type": "multipart/form-data" // 🔥 REQUIRED
+      }
+  }
+ );
+};
+
+export const getCategories = (data) =>
+  axiosClient.get("/category/",data);
+
+export const createSubCategory = (data) =>
+  axiosClient.post("/subcategories/create", data);
+
+export const getSubCategories = (category) =>
+  axiosClient.get(`/subcategories/by-category/${category}`);
+
+export const createProductMaster = (data) =>
+  axiosClient.post("/product-master/create", data);
+
+
+export const getProductMasters = (data) =>
+  axiosClient.get("/product-master/",data);
+
+
+
+export const getProductMasterById = (id) =>
+  axiosClient.get(`/product-master/${id}`);
+
+
+//NEW ---------- 
+
+export const  getPendingRetailerProducts = (data) =>
+  axiosClient.get("/retailer-products/admin/pending",data);
+
+
+export const  updateProductMaster = (id) =>
+  axiosClient.put(`/product-master/${id}`);
+
+export const deleteProductMaster = (id) =>
+  axiosClient.delete(`/product-master/${id}`);
+
+
+
+export const  getPendingSellerProducts = (data) =>
+  axiosClient.get("/admin/retailer-products/pending",data); 
+
+export const approveRetailerProduct = (id) =>
+  axiosClient.put(`/admin/retailer-products/approve/${id}`);
+
+export const rejectRetailerProduct = (id) =>
+  axiosClient.put(`/admin/retailer-products/reject/${id}`);
+
+export const getApprovedRetailerProducts = (data) =>
+  axiosClient.get("/admin/retailer-products/approved",data);  
+
+export const getRejectedRetailerProducts = (data) =>
+  axiosClient.get("/admin/retailer-products/rejected",data);
+
+
+export const getRetailerProductById = (id) =>
+  axiosClient.get(`/admin/retailer-products/${id}`);
+

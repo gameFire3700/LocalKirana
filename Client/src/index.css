@@ -53,3 +53,12 @@
 .animate-slideIn {
   animation: slide-in 0.4s ease-out;
 }
+.input {
+  @apply w-full px-4 py-3 rounded-lg border border-gray-300
+  focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none bg-white;
+}
+
+
+.label {
+  @apply block mb-1 text-sm font-semibold text-gray-700;
+}

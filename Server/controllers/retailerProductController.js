@@ -1,141 +1,304 @@
 const RetailerProduct = require("../models/RetailerProduct");
-const Product = require("../models/Product");
+const ProductMaster = require("../models/ProductMaster");
+const upload = require("../middleware/upload"); // 👈 tumhara multer file
 
-/* ==========================================================
-   🟢 Retailer: Add product from master list
-========================================================== */
-exports.addRetailerProduct = async (req, res, next) => {
+/* =====================================================
+   RETAILER → ADD PRODUCT (GOES TO ADMIN)
+===================================================== */
+
+exports.requestAddRetailerProduct = async (req, res, next) => {
   try {
-    const { productId, price, stock } = req.body;
-    const retailerId = req.user.id;
+    const retailerId = req.user._id;
 
-    // 1️⃣ Product master check
-    const product = await Product.findById(productId);
-    if (!product || product.is_deleted) {
+    let imagePath = "";
+    if (req.file) {
+      imagePath = `/uploads/${req.file.filename}`;
+    }
+
+    const {
+      product_master,
+      price,
+      mrp,
+      discount,
+      tax_rate,
+      cost_price,
+      stock,
+      warehouse_location,
+      delivery_time,
+      expiry_date,
+      manufacture_date,
+      batch_number
+    } = req.body;
+
+    if (!product_master || price == null || stock == null) {
       return res.status(400).json({
         success: false,
-        message: "Invalid product selected"
+        message: "product_master, price and stock are required"
       });
     }
 
-    // 2️⃣ Already added?
-    const already = await RetailerProduct.findOne({
-      retailerId,
-      productId
+    const master = await ProductMaster.findOne({
+      _id: product_master,
+      is_deleted: false,
+      status: "active"
     });
 
-    if (already) {
-      return res.status(409).json({
+    if (!master) {
+      return res.status(404).json({
         success: false,
-        message: "Product already added by you"
+        message: "Product Master not found or inactive"
       });
     }
 
-    // 3️⃣ Create retailer-product mapping
-    const retailerProduct = await RetailerProduct.create({
-      retailerId,
-      productId,
+    // ✅ CHECK ONLY FOR SAME RETAILER
+    const exists = await RetailerProduct.findOne({
+      retailer: retailerId,
+      product_master: master._id,
+      is_deleted: false
+    });
+
+    if (exists) {
+      return res.status(409).json({
+        success: false,
+        message: "You have already added this product"
+      });
+    }
+
+    const product = await RetailerProduct.create({
+      retailer: retailerId,
+      product_master: master._id,
+
+      category: master.category,
+      subcategory: master.subcategory,
+      brand: master.brand,
+
+      image: imagePath,
+
       price,
+      mrp,
+      discount,
+      tax_rate,
+      cost_price,
       stock,
-      status: "pending"
+      warehouse_location,
+      delivery_time,
+      expiry_date,
+      manufacture_date,
+      batch_number,
+
+      status: "pending",
+      is_deleted: false,
+      created_by: retailerId
     });
 
     res.status(201).json({
       success: true,
-      message: "✅ Product added, waiting for admin approval",
-      data: retailerProduct
+      message: "Product sent to admin for approval",
+      data: product
     });
 
-  } catch (err) {
-    next(err);
+  } catch (error) {
+    // ✅ Final safety for race condition
+    if (error.code === 11000) {
+      return res.status(409).json({
+        success: false,
+        message: "You have already added this product"
+      });
+    }
+    next(error);
   }
 };
 
 
-/* ==========================================================
-   🟢 Retailer: Get my products
-========================================================== */
-exports.getMyRetailerProducts = async (req, res, next) => {
+/* =====================================================
+   ADMIN → GET PENDING RETAILER PRODUCTS
+===================================================== */
+exports.getPendingRetailerProducts = async (req, res, next) => {
   try {
-    const retailerId = req.user.id;
-
-    const products = await RetailerProduct.find({ retailerId })
-      .populate("productId")
-      .sort({ createdAt: -1 });
+    const products = await RetailerProduct.find({
+      status: "pending",
+      is_deleted: false
+    })
+      .populate("retailer", "name email")
+      .populate("product_master", "name");
 
     res.json({
       success: true,
       count: products.length,
       data: products
     });
-
-  } catch (err) {
-    next(err);
+  } catch (error) {
+    next(error);
   }
 };
 
-
-/* ==========================================================
-   🟠 Retailer: Update price / stock
-========================================================== */
-exports.updateRetailerProduct = async (req, res, next) => {
+/* =====================================================
+   ADMIN → APPROVE / REJECT PRODUCT
+===================================================== */
+exports.updateRetailerProductStatus = async (req, res, next) => {
   try {
-    const retailerProduct = await RetailerProduct.findOne({
-      _id: req.params.id,
-      retailerId: req.user.id
-    });
+    const { id } = req.params;
+    const { status, rejection_reason } = req.body;
 
-    if (!retailerProduct) {
-      return res.status(404).json({
+    if (!["approved", "rejected"].includes(status)) {
+      return res.status(400).json({
         success: false,
-        message: "Product not found or not owned by you"
+        message: "Invalid status"
       });
     }
 
-    const allowedFields = ["price", "stock"];
-    allowedFields.forEach(field => {
+    const product = await RetailerProduct.findById(id);
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Retailer product request not found"
+      });
+    }
+
+    product.status = status;
+    product.rejection_reason =
+      status === "rejected" ? rejection_reason : "";
+    product.updated_by = req.user._id;
+
+    await product.save();
+
+    res.json({
+      success: true,
+      message: `Product ${status} successfully`,
+      data: product
+    });
+
+  } catch (error) {
+    next(error);
+  }
+};
+
+/* =====================================================
+   RETAILER → GET HIS PRODUCTS
+===================================================== */
+exports.getRetailerProducts = async (req, res, next) => {
+  try {
+    const retailerId = req.user._id;
+
+    const products = await RetailerProduct.find({
+      retailer: retailerId,
+      is_deleted: false
+    })
+      .populate("product_master", "name")
+      .sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      data: products
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+/* =====================================================
+   RETAILER → UPDATE PRODUCT
+===================================================== */
+exports.updateRetailerProduct = async (req, res, next) => {
+  try {
+    const retailerId = req.user._id;
+    const { id } = req.params;
+
+    const product = await RetailerProduct.findOne({
+      _id: id,
+      retailer: retailerId,
+      is_deleted: false
+    });
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found"
+      });
+    }
+
+    // ❌ Rejected product cannot be updated
+    if (product.status === "rejected") {
+      return res.status(403).json({
+        success: false,
+        message: "Rejected product cannot be updated. Create new request."
+      });
+    }
+
+    const allowedFields = [
+      "price",
+      "mrp",
+      "discount",
+      "tax_rate",
+      "cost_price",
+      "stock",
+      "warehouse_location",
+      "delivery_time",
+      "expiry_date",
+      "manufacture_date",
+      "batch_number",
+      "is_available",
+      "is_featured"
+    ];
+
+    allowedFields.forEach((field) => {
       if (req.body[field] !== undefined) {
-        retailerProduct[field] = req.body[field];
+        product[field] = req.body[field];
       }
     });
 
-    await retailerProduct.save();
+    // 🔁 If approved product updated → re-approval optional
+    if (product.status === "approved") {
+      product.status = "pending";
+    }
+
+    product.updated_by = retailerId;
+    await product.save();
 
     res.json({
       success: true,
-      message: "✅ Product updated successfully",
-      data: retailerProduct
+      message: "Product updated and sent for admin review",
+      data: product
     });
 
-  } catch (err) {
-    next(err);
+  } catch (error) {
+    next(error);
   }
 };
 
-
-/* ==========================================================
-   🔴 Retailer: Remove product from my store
-========================================================== */
+/* =====================================================
+   RETAILER → DELETE PRODUCT
+===================================================== */
 exports.deleteRetailerProduct = async (req, res, next) => {
   try {
-    const deleted = await RetailerProduct.findOneAndDelete({
-      _id: req.params.id,
-      retailerId: req.user.id
+    const retailerId = req.user._id;
+    const { id } = req.params;
+
+    const product = await RetailerProduct.findOne({
+      _id: id,
+      retailer: retailerId,
+      is_deleted: false
     });
 
-    if (!deleted) {
+    if (!product) {
       return res.status(404).json({
         success: false,
-        message: "Product not found or not owned by you"
+        message: "Product not found"
       });
     }
 
+    product.is_deleted = true;
+    product.status = "inactive";
+    product.updated_by = retailerId;
+
+    await product.save();
+
     res.json({
       success: true,
-      message: "🗑️ Product removed from your store"
+      message: "Product removed successfully"
     });
 
-  } catch (err) {
-    next(err);
+  } catch (error) {
+    next(error);
   }
 };

@@ -1,48 +1,18 @@
 const express = require("express");
 const router = express.Router();
-const Category = require("../models/Category");
+const upload = require("../middleware/upload");
 
-// GET all categories
-router.get("/", async (req, res) => {
-    try {
-        const categories = await Category.find({ is_deleted: false });
-        res.json({ success: true, data: categories });
-    } catch (err) {
-        res.status(500).json({ success: false, message: "Failed to load categories" });
-    }
-});
+const {
+  createCategory,
+  getAllCategories
+} = require("../controllers/categoryController");
 
-// GET all with route /category/all
-router.get("/all", async (req, res) => {
-    try {
-        const categories = await Category.find({ is_active: true });
-        res.json({ success: true, data: categories });
-    } catch (err) {
-        res.status(500).json({ success: false, message: "Failed to load categories" });
-    }
-});
+const { adminProtect, authorizeRoles } = require("../middleware/adminMiddleware");
 
-// CREATE new category
-router.post("/create", async (req, res) => {
-    try {
-        const { category_id, name, description, parent_category, image_url, display_order } = req.body;
+// 🔐 isAdmin middleware baad me laga sakte ho
+router.post("/create", adminProtect, 
+  upload.single("image"), createCategory);
 
-        const category = new Category({
-            category_id,
-            name,
-            description,
-            parent_category: parent_category || null,
-            image_url: image_url || "",
-            display_order: display_order || 0,
-        });
-
-        await category.save();
-
-        res.status(201).json({ success: true, data: category });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ success: false, message: "Failed to create category", error: err.message });
-    }
-});
+router.get("/", adminProtect, getAllCategories);
 
 module.exports = router;
